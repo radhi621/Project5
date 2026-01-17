@@ -37,6 +37,12 @@ export class MechanicRequestsController {
     return this.mechanicRequestsService.findByUser(req.user.userId);
   }
 
+  @Get('my-history')
+  @Roles('mechanic')
+  findMyHistory(@Request() req: any) {
+    return this.mechanicRequestsService.findByMechanic(req.user.userId);
+  }
+
   @Get(':id')
   @Roles('mechanic', 'admin', 'user')
   findOne(@Param('id') id: string) {

@@ -42,6 +42,16 @@ export class MechanicRequestsService {
       .exec();
   }
 
+  async findByMechanic(mechanicId: string) {
+    return this.mechanicRequestModel
+      .find({ 
+        acceptedBy: new Types.ObjectId(mechanicId) as any,
+        status: { $in: ['accepted', 'denied'] }
+      })
+      .sort({ respondedAt: -1 })
+      .exec();
+  }
+
   async acceptRequest(
     id: string,
     mechanicId: string,

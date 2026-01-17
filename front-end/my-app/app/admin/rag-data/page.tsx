@@ -451,7 +451,7 @@ export default function RAGDataPage() {
                   type="text" 
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white placeholder-gray-500" 
                   placeholder="Enter document title" 
                   disabled={uploading}
                 />
@@ -461,16 +461,16 @@ export default function RAGDataPage() {
                 <select 
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
                   disabled={uploading}
                 >
-                  <option value="">Select a category</option>
-                  <option value="Engine">Engine</option>
-                  <option value="Brakes">Brakes</option>
-                  <option value="Transmission">Transmission</option>
-                  <option value="Electrical">Electrical</option>
-                  <option value="HVAC">HVAC</option>
-                  <option value="Suspension">Suspension</option>
+                  <option value="" className="text-gray-900">Select a category</option>
+                  <option value="Engine" className="text-gray-900">Engine</option>
+                  <option value="Brakes" className="text-gray-900">Brakes</option>
+                  <option value="Transmission" className="text-gray-900">Transmission</option>
+                  <option value="Electrical" className="text-gray-900">Electrical</option>
+                  <option value="HVAC" className="text-gray-900">HVAC</option>
+                  <option value="Suspension" className="text-gray-900">Suspension</option>
                 </select>
               </div>
               <div>

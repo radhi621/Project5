@@ -145,7 +145,7 @@ export default function MechanicsPage() {
                 placeholder="Search by name, shop, location, or specialty..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white placeholder-gray-500"
               />
             </div>
 
@@ -157,12 +157,12 @@ export default function MechanicsPage() {
               <select
                 value={filterAvailability}
                 onChange={(e) => setFilterAvailability(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white"
               >
-                <option value="all">All</option>
-                <option value="available">Available</option>
-                <option value="busy">Busy</option>
-                <option value="offline">Offline</option>
+                <option value="all" className="text-gray-900">All</option>
+                <option value="available" className="text-gray-900">Available</option>
+                <option value="busy" className="text-gray-900">Busy</option>
+                <option value="offline" className="text-gray-900">Offline</option>
               </select>
             </div>
 
@@ -174,11 +174,11 @@ export default function MechanicsPage() {
               <select
                 value={filterSpecialty}
                 onChange={(e) => setFilterSpecialty(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white"
               >
-                <option value="all">All Specialties</option>
+                <option value="all" className="text-gray-900">All Specialties</option>
                 {allSpecialties.map(specialty => (
-                  <option key={specialty} value={specialty}>{specialty}</option>
+                  <option key={specialty} value={specialty} className="text-gray-900">{specialty}</option>
                 ))}
               </select>
             </div>

@@ -31,6 +31,8 @@ interface MechanicRequest {
   chatHistory: { role: string; content: string; timestamp: string }[];
   status: 'pending' | 'accepted' | 'denied' | 'cancelled';
   createdAt: string;
+  respondedAt?: string;
+  responseMessage?: string;
 }
 
 export default function MechanicDashboard() {
@@ -38,9 +40,11 @@ export default function MechanicDashboard() {
   const router = useRouter();
   const [profile, setProfile] = useState<MechanicProfile | null>(null);
   const [pendingRequests, setPendingRequests] = useState<MechanicRequest[]>([]);
+  const [requestHistory, setRequestHistory] = useState<MechanicRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [activeTab, setActiveTab] = useState<'pending' | 'history'>('pending');
   
   // Form state
   const [formData, setFormData] = useState({
@@ -62,6 +66,7 @@ export default function MechanicDashboard() {
     } else {
       loadProfile();
       loadPendingRequests();
+      loadRequestHistory();
     }
   }, [user, router]);
 
@@ -122,6 +127,25 @@ export default function MechanicDashboard() {
       }
     } catch (error) {
       console.error('Failed to load pending requests:', error);
+    }
+  };
+
+  const loadRequestHistory = async () => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      const response = await fetch('http://localhost:3001/api/mechanic-requests/my-history', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      
+      if (response.ok) {
+        const history = await response.json();
+        console.log('Request history:', history);
+        setRequestHistory(history);
+      }
+    } catch (error) {
+      console.error('Failed to load request history:', error);
     }
   };
 
@@ -403,6 +427,95 @@ export default function MechanicDashboard() {
             </div>
           </div>
         )}
+
+        {/* Request History Section */}
+        <div className="mt-6 bg-white rounded-lg shadow-sm">
+          <div className="px-6 py-4 border-b border-gray-200">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900">My Request History</h2>
+                <p className="text-sm text-gray-500 mt-1">Requests you've accepted or declined</p>
+              </div>
+              <span className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-semibold">
+                {requestHistory.length} total
+              </span>
+            </div>
+          </div>
+
+          <div className="p-6">
+            {requestHistory.length === 0 ? (
+              <div className="text-center py-8">
+                <div className="inline-flex items-center justify-center w-12 h-12 bg-gray-100 rounded-full mb-3">
+                  <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </div>
+                <p className="text-gray-500">No request history yet</p>
+                <p className="text-sm text-gray-400 mt-1">Accepted and declined requests will appear here</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {requestHistory.map((request) => (
+                  <div 
+                    key={request._id}
+                    className="border border-gray-200 rounded-lg p-4"
+                  >
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gray-500 to-gray-600 flex items-center justify-center text-white font-bold">
+                          {request.userName.charAt(0)}
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-gray-900">{request.userName}</h3>
+                          <p className="text-sm text-gray-600">{request.userEmail}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        {request.status === 'accepted' && (
+                          <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-semibold">
+                            ✓ Accepted
+                          </span>
+                        )}
+                        {request.status === 'denied' && (
+                          <span className="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs font-semibold">
+                            ✗ Declined
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4 mb-3 text-sm">
+                      <div>
+                        <span className="text-gray-500">Requested:</span>
+                        <p className="text-gray-900">{new Date(request.createdAt).toLocaleString()}</p>
+                      </div>
+                      {request.respondedAt && (
+                        <div>
+                          <span className="text-gray-500">Responded:</span>
+                          <p className="text-gray-900">{new Date(request.respondedAt).toLocaleString()}</p>
+                        </div>
+                      )}
+                    </div>
+
+                    {request.responseMessage && (
+                      <div className="bg-gray-50 rounded-lg p-3 mb-3">
+                        <p className="text-xs font-semibold text-gray-500 uppercase mb-1">Your Response:</p>
+                        <p className="text-sm text-gray-900">{request.responseMessage}</p>
+                      </div>
+                    )}
+
+                    <button
+                      onClick={() => router.push(`/mechanic/requests/${request._id}`)}
+                      className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                    >
+                      View Details →
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
 
         {/* Profile Information */}
         <div className="mt-6 bg-white rounded-lg shadow-sm">
