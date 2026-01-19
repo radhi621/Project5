@@ -387,24 +387,24 @@ export default function Home() {
         {/* Messages Area */}
         <div className="flex-1 overflow-y-auto">
           {messages.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full px-3 sm:px-4 py-6 text-center overflow-y-auto">
-              <div className="max-w-2xl w-full">
-                <div className="mb-6 sm:mb-8">
-                  <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 mb-3 sm:mb-4 bg-gradient-to-br from-orange-500 to-red-600 rounded-2xl">
-                    <svg className="w-8 h-8 sm:w-10 sm:h-10 text-white" fill="currentColor" viewBox="0 0 20 20">
+            <div className="h-full overflow-y-auto px-3 sm:px-4 py-4 sm:py-6">
+              <div className="max-w-2xl mx-auto">
+                <div className="text-center mb-4 sm:mb-6">
+                  <div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 mb-2 sm:mb-3 bg-gradient-to-br from-orange-500 to-red-600 rounded-2xl">
+                    <svg className="w-6 h-6 sm:w-8 sm:h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
                       <path d="M13 7H7v6h6V7z" />
                       <path fillRule="evenodd" d="M7 2a1 1 0 012 0v1h2V2a1 1 0 112 0v1h2a2 2 0 012 2v2h1a1 1 0 110 2h-1v2h1a1 1 0 110 2h-1v2a2 2 0 01-2 2h-2v1a1 1 0 11-2 0v-1H9v1a1 1 0 11-2 0v-1H5a2 2 0 01-2-2v-2H2a1 1 0 110-2h1V9H2a1 1 0 010-2h1V5a2 2 0 012-2h2V2zM5 5h10v10H5V5z" clipRule="evenodd" />
                     </svg>
                   </div>
-                  <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2 sm:mb-3">
+                  <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-1.5 sm:mb-2">
                     Welcome to AutoDiag AI
                   </h1>
-                  <p className="text-base sm:text-lg text-gray-600 mb-6 sm:mb-8">
+                  <p className="text-sm sm:text-base lg:text-lg text-gray-600 mb-4 sm:mb-6">
                     Your intelligent automotive diagnostic assistant. Describe your car issues and get instant, accurate diagnostics.
                   </p>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-6 sm:mb-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3 lg:gap-4 mb-4 sm:mb-6">
                   {[
                     {
                       icon: (
@@ -443,22 +443,24 @@ export default function Home() {
                       description: 'Book appointments with trusted mechanics'
                     },
                   ].map((feature, index) => (
-                    <div key={index} className="p-3 sm:p-4 bg-gray-50 rounded-lg sm:rounded-xl text-left">
-                      <div className="text-blue-600 mb-1.5 sm:mb-2">{feature.icon}</div>
-                      <h3 className="text-sm sm:text-base font-semibold text-gray-900 mb-1">{feature.title}</h3>
-                      <p className="text-xs sm:text-sm text-gray-600">{feature.description}</p>
+                    <div key={index} className="p-2.5 sm:p-3 lg:p-4 bg-gray-50 rounded-lg text-left">
+                      <div className="text-blue-600 mb-1 sm:mb-1.5 flex items-center">
+                        <div className="w-5 h-5 sm:w-6 sm:h-6">{feature.icon}</div>
+                      </div>
+                      <h3 className="text-xs sm:text-sm lg:text-base font-semibold text-gray-900 mb-0.5 sm:mb-1">{feature.title}</h3>
+                      <p className="text-[11px] sm:text-xs lg:text-sm text-gray-600 leading-tight">{feature.description}</p>
                     </div>
                   ))}
                 </div>
 
-                <div className="text-left bg-blue-50 border border-blue-200 rounded-lg sm:rounded-xl p-3 sm:p-4">
-                  <h3 className="font-semibold text-blue-900 mb-2 flex items-center gap-2">
-                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <div className="text-left bg-blue-50 border border-blue-200 rounded-lg p-2.5 sm:p-3 lg:p-4">
+                  <h3 className="text-xs sm:text-sm font-semibold text-blue-900 mb-1.5 sm:mb-2 flex items-center gap-1.5 sm:gap-2">
+                    <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                     </svg>
                     Example Questions
                   </h3>
-                  <ul className="text-sm text-blue-800 space-y-1">
+                  <ul className="text-[11px] sm:text-xs lg:text-sm text-blue-800 space-y-0.5 sm:space-y-1">
                     <li>• "My check engine light came on and the car is idling rough"</li>
                     <li>• "There's a squealing noise when I brake"</li>
                     <li>• "My car is overheating, what could be the problem?"</li>
