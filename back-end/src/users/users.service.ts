@@ -62,6 +62,19 @@ export class UsersService {
     return user;
   }
 
+  async changeRole(id: string, role: string): Promise<User> {
+    if (!['user', 'admin', 'mechanic'].includes(role)) {
+      throw new Error('Invalid role');
+    }
+    const user = await this.userModel
+      .findByIdAndUpdate(id, { role }, { new: true })
+      .exec();
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+    return user;
+  }
+
   async remove(id: string): Promise<void> {
     const result = await this.userModel.findByIdAndDelete(id).exec();
     if (!result) {

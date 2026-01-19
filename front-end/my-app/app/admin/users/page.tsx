@@ -13,6 +13,7 @@ interface User {
   totalAppointments: number;
   status: 'active' | 'inactive' | 'suspended';
   lastActive: string;
+  role: 'user' | 'admin' | 'mechanic';
 }
 
 export default function UsersPage() {
@@ -54,6 +55,7 @@ export default function UsersPage() {
           totalAppointments: user.totalAppointments || 0,
           status: user.status || 'active',
           lastActive: user.lastActive ? new Date(user.lastActive).toLocaleDateString() : 'Never',
+          role: user.role || 'user',
         })));
       } else {
         console.error('Failed to load users, status:', response.status);
@@ -113,6 +115,35 @@ export default function UsersPage() {
     } catch (error) {
       console.error('Failed to suspend user:', error);
       alert('Failed to suspend user. Please try again.');
+    }
+  };
+
+  const handleChangeRole = async (userId: string, newRole: string) => {
+    if (!confirm(`Are you sure you want to change this user's role to ${newRole}?`)) return;
+    
+    try {
+      const token = localStorage.getItem('accessToken');
+      const response = await fetch(`http://localhost:3001/api/users/${userId}/role`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ role: newRole }),
+      });
+      
+      if (response.ok) {
+        alert(`User role changed to ${newRole} successfully`);
+        loadUsers();
+        setShowUserModal(false);
+      } else {
+        const errorText = await response.text();
+        console.error('Failed to change role:', errorText);
+        alert('Failed to change role. Please try again.');
+      }
+    } catch (error) {
+      console.error('Failed to change role:', error);
+      alert('Failed to change role. Please try again.');
     }
   };
 
@@ -283,6 +314,9 @@ export default function UsersPage() {
                       Status
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Role
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Activity
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -299,7 +333,7 @@ export default function UsersPage() {
                 <tbody className="divide-y divide-gray-200">
                   {loading ? (
                     <tr>
-                      <td colSpan={8} className="px-6 py-8 text-center text-gray-500">
+                      <td colSpan={9} className="px-6 py-8 text-center text-gray-500">
                         <div className="flex justify-center">
                           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                         </div>
@@ -307,7 +341,7 @@ export default function UsersPage() {
                     </tr>
                   ) : users.length === 0 ? (
                     <tr>
-                      <td colSpan={8} className="px-6 py-8 text-center text-gray-500">
+                      <td colSpan={9} className="px-6 py-8 text-center text-gray-500">
                         No users found
                       </td>
                     </tr>
@@ -339,6 +373,15 @@ export default function UsersPage() {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`px-2 py-1 text-xs font-medium rounded-full ${statusColors[user.status]}`}>
                           {user.status.charAt(0).toUpperCase() + user.status.slice(1)}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                          user.role === 'admin' ? 'bg-purple-100 text-purple-800' :
+                          user.role === 'mechanic' ? 'bg-green-100 text-green-800' :
+                          'bg-gray-100 text-gray-800'
+                        }`}>
+                          {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
                         </span>
                       </td>
                       <td className="px-6 py-4">
@@ -448,6 +491,42 @@ export default function UsersPage() {
                 <div className="bg-gray-50 p-4 rounded-lg">
                   <p className="text-sm text-gray-500">Last Active</p>
                   <p className="text-sm font-semibold text-gray-900">{selectedUser.lastActive}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Role Management */}
+            <div className="mb-6">
+              <h4 className="font-semibold text-gray-900 mb-3">Account Type</h4>
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <p className="text-sm text-gray-500 mb-1">Current Role</p>
+                    <span className={`inline-block px-3 py-1 text-sm font-medium rounded-full ${
+                      selectedUser.role === 'admin' ? 'bg-purple-100 text-purple-800' :
+                      selectedUser.role === 'mechanic' ? 'bg-green-100 text-green-800' :
+                      'bg-gray-100 text-gray-800'
+                    }`}>
+                      {selectedUser.role.charAt(0).toUpperCase() + selectedUser.role.slice(1)}
+                    </span>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Change Role
+                  </label>
+                  <select
+                    value={selectedUser.role}
+                    onChange={(e) => handleChangeRole(selectedUser.id, e.target.value as 'user' | 'admin' | 'mechanic')}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
+                  >
+                    <option value="user">User</option>
+                    <option value="mechanic">Mechanic</option>
+                    <option value="admin">Admin</option>
+                  </select>
+                  <p className="mt-2 text-xs text-gray-500">
+                    Admins have full access, mechanics can manage appointments, users have basic access.
+                  </p>
                 </div>
               </div>
             </div>

@@ -51,6 +51,12 @@ export class UsersController {
     return this.usersService.suspend(id);
   }
 
+  @Patch(':id/role')
+  @Roles('admin')
+  changeRole(@Param('id') id: string, @Body('role') role: string) {
+    return this.usersService.changeRole(id, role);
+  }
+
   @Delete(':id')
   @Roles('admin')
   remove(@Param('id') id: string) {
