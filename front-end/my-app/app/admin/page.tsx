@@ -96,30 +96,30 @@ export default function AdminDashboard() {
 
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
-        <header className="bg-white border-b border-gray-200 px-6 py-4">
+        <header className="bg-white border-b border-gray-200 px-3 sm:px-6 py-3 sm:py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1">
               <button
                 onClick={() => setIsSidebarOpen(true)}
-                className="lg:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                className="lg:hidden p-1.5 sm:p-2 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0"
               >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
               </button>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-                <p className="text-sm text-gray-500">Welcome back, Admin</p>
+              <div className="min-w-0">
+                <h1 className="text-lg sm:text-2xl font-bold text-gray-900">Dashboard</h1>
+                <p className="text-xs sm:text-sm text-gray-500 hidden sm:block">Welcome back, Admin</p>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors relative">
-                <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+              <button className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-lg transition-colors relative">
+                <svg className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                 </svg>
-                <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+                <span className="absolute top-0.5 right-0.5 sm:top-1 sm:right-1 w-2 h-2 bg-red-500 rounded-full"></span>
               </button>
-              <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
+              <button className="hidden sm:flex px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
                 Quick Actions
               </button>
             </div>
@@ -135,63 +135,63 @@ export default function AdminDashboard() {
           ) : (
             <>
               {/* Stats Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-                <div className="bg-white rounded-lg shadow p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="p-2 bg-blue-100 rounded-lg text-blue-600">
-                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-4 sm:mb-6">
+                <div className="bg-white rounded-lg shadow p-3 sm:p-6">
+                  <div className="flex items-center justify-between mb-2 sm:mb-4">
+                    <div className="p-1.5 sm:p-2 bg-blue-100 rounded-lg text-blue-600">
+                      <svg className="w-4 h-4 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                       </svg>
                     </div>
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-900 mb-1">{stats?.users.total || 0}</h3>
-                  <p className="text-sm text-gray-500">Total Users</p>
+                  <h3 className="text-lg sm:text-2xl font-bold text-gray-900 mb-0.5 sm:mb-1">{stats?.users.total || 0}</h3>
+                  <p className="text-xs sm:text-sm text-gray-500">Total Users</p>
                 </div>
 
-                <div className="bg-white rounded-lg shadow p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="p-2 bg-green-100 rounded-lg text-green-600">
-                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="bg-white rounded-lg shadow p-3 sm:p-6">
+                  <div className="flex items-center justify-between mb-2 sm:mb-4">
+                    <div className="p-1.5 sm:p-2 bg-green-100 rounded-lg text-green-600">
+                      <svg className="w-4 h-4 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                       </svg>
                     </div>
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-900 mb-1">{stats?.mechanics.total || 0}</h3>
-                  <p className="text-sm text-gray-500">Active Mechanics ({stats?.mechanics.available || 0} available)</p>
+                  <h3 className="text-lg sm:text-2xl font-bold text-gray-900 mb-0.5 sm:mb-1">{stats?.mechanics.total || 0}</h3>
+                  <p className="text-xs sm:text-sm text-gray-500 truncate">Mechanics <span className="hidden sm:inline">({stats?.mechanics.available || 0} available)</span></p>
                 </div>
 
-                <div className="bg-white rounded-lg shadow p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="p-2 bg-purple-100 rounded-lg text-purple-600">
-                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="bg-white rounded-lg shadow p-3 sm:p-6">
+                  <div className="flex items-center justify-between mb-2 sm:mb-4">
+                    <div className="p-1.5 sm:p-2 bg-purple-100 rounded-lg text-purple-600">
+                      <svg className="w-4 h-4 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                       </svg>
                     </div>
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-900 mb-1">{stats?.documents.total || 0}</h3>
-                  <p className="text-sm text-gray-500">RAG Documents ({stats?.documents.processed || 0} processed)</p>
+                  <h3 className="text-lg sm:text-2xl font-bold text-gray-900 mb-0.5 sm:mb-1">{stats?.documents.total || 0}</h3>
+                  <p className="text-xs sm:text-sm text-gray-500 truncate">Documents <span className="hidden sm:inline">({stats?.documents.processed || 0} proc.)</span></p>
                 </div>
 
-                <div className="bg-white rounded-lg shadow p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="p-2 bg-orange-100 rounded-lg text-orange-600">
-                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="bg-white rounded-lg shadow p-3 sm:p-6">
+                  <div className="flex items-center justify-between mb-2 sm:mb-4">
+                    <div className="p-1.5 sm:p-2 bg-orange-100 rounded-lg text-orange-600">
+                      <svg className="w-4 h-4 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                       </svg>
                     </div>
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-900 mb-1">{stats?.appointments.today || 0}</h3>
-                  <p className="text-sm text-gray-500">Appointments Today ({stats?.appointments.pending || 0} pending)</p>
+                  <h3 className="text-lg sm:text-2xl font-bold text-gray-900 mb-0.5 sm:mb-1">{stats?.appointments.today || 0}</h3>
+                  <p className="text-xs sm:text-sm text-gray-500 truncate">Today <span className="hidden sm:inline">({stats?.appointments.pending || 0} pending)</span></p>
                 </div>
               </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {/* Recent Activity */}
             <div className="bg-white rounded-lg shadow">
-              <div className="px-6 py-4 border-b border-gray-200">
-                <h2 className="text-lg font-semibold text-gray-900">Recent Activity</h2>
+              <div className="px-3 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
+                <h2 className="text-base sm:text-lg font-semibold text-gray-900">Recent Activity</h2>
               </div>
-              <div className="p-6">
+              <div className="p-3 sm:p-6">
                 <div className="space-y-4">
                   {recentActivity.length > 0 ? (
                     recentActivity.map((activity, index) => (

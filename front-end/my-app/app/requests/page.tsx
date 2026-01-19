@@ -74,26 +74,26 @@ export default function MyRequestsPage() {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-6">
           <div className="flex justify-between items-center">
             <div>
               <button
                 onClick={() => router.push('/')}
-                className="text-sm text-gray-600 hover:text-gray-900 mb-2 flex items-center gap-1"
+                className="text-xs sm:text-sm text-gray-600 hover:text-gray-900 mb-2 flex items-center gap-1"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
                 Back to Chat
               </button>
-              <h1 className="text-2xl font-bold text-gray-900">My Mechanic Requests</h1>
-              <p className="text-sm text-gray-500">Track your help requests and mechanic responses</p>
+              <h1 className="text-lg sm:text-2xl font-bold text-gray-900">My Mechanic Requests</h1>
+              <p className="text-xs sm:text-sm text-gray-500">Track your help requests and mechanic responses</p>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8">
         {requests.length === 0 ? (
           <div className="bg-white rounded-lg shadow-sm p-12 text-center">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-4">

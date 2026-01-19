@@ -144,24 +144,24 @@ export default function UsersPage() {
 
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
-        <header className="bg-white border-b border-gray-200 px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+        <header className="bg-white border-b border-gray-200 px-3 sm:px-6 py-3 sm:py-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-2 sm:gap-4 w-full sm:w-auto">
               <button
                 onClick={() => setIsSidebarOpen(true)}
-                className="lg:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                className="lg:hidden p-1.5 sm:p-2 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0"
               >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
               </button>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">Users Management</h1>
-                <p className="text-sm text-gray-500">Manage user accounts and activity</p>
+              <div className="min-w-0">
+                <h1 className="text-lg sm:text-2xl font-bold text-gray-900">Users Management</h1>
+                <p className="text-xs sm:text-sm text-gray-500 hidden sm:block">Manage user accounts and activity</p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <button onClick={handleExportUsers} className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium flex items-center gap-2">
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <button onClick={handleExportUsers} className="flex-1 sm:flex-none px-3 sm:px-4 py-1.5 sm:py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-xs sm:text-sm font-medium flex items-center justify-center gap-2">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
@@ -172,16 +172,16 @@ export default function UsersPage() {
         </header>
 
         {/* Main Content */}
-        <main className="flex-1 overflow-y-auto p-6">
+        <main className="flex-1 overflow-y-auto p-3 sm:p-6">
           {/* Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <div className="bg-white rounded-lg shadow p-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
+            <div className="bg-white rounded-lg shadow p-3 sm:p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500">Total Users</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.total || users.length}</p>
+                  <p className="text-xs sm:text-sm text-gray-500">Total Users</p>
+                  <p className="text-lg sm:text-2xl font-bold text-gray-900">{stats.total || users.length}</p>
                 </div>
-                <div className="p-3 bg-blue-100 rounded-lg">
+                <div className="p-2 sm:p-3 bg-blue-100 rounded-lg">
                   <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                   </svg>
@@ -230,8 +230,8 @@ export default function UsersPage() {
           </div>
 
           {/* Filters */}
-          <div className="bg-white rounded-lg shadow mb-6 p-4">
-            <div className="flex flex-col md:flex-row gap-4">
+          <div className="bg-white rounded-lg shadow mb-4 sm:mb-6 p-3 sm:p-4">
+            <div className="flex flex-col gap-3 sm:gap-4">
               <div className="flex-1">
                 <div className="relative">
                   <input
@@ -246,7 +246,7 @@ export default function UsersPage() {
                   </svg>
                 </div>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-2 overflow-x-auto pb-1 -mx-3 px-3 sm:mx-0 sm:px-0">
                 {['All', 'Active', 'Inactive', 'Suspended'].map((status) => (
                   <button
                     key={status}

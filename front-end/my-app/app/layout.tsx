@@ -16,6 +16,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "AutoDiag AI - Smart Automotive Diagnostics",
   description: "Get instant AI-powered diagnostics for your vehicle. Chat with our intelligent assistant to identify issues and prepare for your mechanic visit.",
+  viewport: "width=device-width, initial-scale=1, maximum-scale=5",
 };
 
 export default function RootLayout({

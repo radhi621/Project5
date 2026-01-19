@@ -307,80 +307,79 @@ export default function Home() {
 
       <div className="flex-1 flex flex-col h-full">
         {/* Header */}
-        <header className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+        <header className="bg-white border-b border-gray-200 px-2 sm:px-4 py-2 sm:py-3 flex items-center justify-between">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
             <button
               onClick={() => setIsSidebarOpen(true)}
-              className="lg:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              className="lg:hidden p-1.5 sm:p-2 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             </button>
-            <div>
-              <h2 className="text-lg font-semibold text-gray-900">
-                {currentChat?.title || 'AutoDiag AI - Vehicle Diagnostics'}
+            <div className="min-w-0">
+              <h2 className="text-sm sm:text-lg font-semibold text-gray-900 truncate">
+                {currentChat?.title || 'AutoDiag AI'}
               </h2>
-              <p className="text-xs text-gray-500">AI-powered automotive diagnostics</p>
+              <p className="hidden sm:block text-xs text-gray-500">AI-powered automotive diagnostics</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
             <button 
               onClick={() => router.push('/requests')}
-              className="hidden sm:flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+              className="flex items-center gap-2 px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+              title="My Requests"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
               </svg>
-              My Requests
+              <span className="hidden md:inline">My Requests</span>
             </button>
-            <div className="hidden sm:flex items-center gap-3 px-3 py-1.5 bg-gray-100 rounded-lg">
-              <span className="text-sm text-gray-700">{user.name}</span>
-              <button
-                onClick={logout}
-                className="text-sm text-red-600 hover:text-red-700 font-medium"
-              >
-                Logout
-              </button>
-            </div>
             {user.role === 'admin' && (
               <button 
                 onClick={() => router.push('/admin')} 
-                className="hidden sm:flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 rounded-lg transition-colors"
+                className="flex items-center gap-2 px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 rounded-lg transition-colors"
+                title="Admin Dashboard"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
-                Admin Dashboard
+                <span className="hidden lg:inline">Admin</span>
               </button>
             )}
             {user.role === 'mechanic' && (
               <button 
                 onClick={() => router.push('/mechanic/dashboard')} 
-                className="hidden sm:flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-lg transition-colors"
+                className="flex items-center gap-2 px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-lg transition-colors"
+                title="My Dashboard"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                 </svg>
-                My Dashboard
+                <span className="hidden lg:inline">Dashboard</span>
               </button>
             )}
             <button 
               onClick={() => setShowRequestMechanicModal(true)}
               disabled={!currentChatId || messages.length === 0}
-              className="hidden sm:flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 disabled:bg-gray-400 disabled:cursor-not-allowed rounded-lg transition-colors"
+              className="flex items-center gap-2 px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 disabled:bg-gray-400 disabled:cursor-not-allowed rounded-lg transition-colors"
+              title="Request Mechanic"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
               </svg>
-              Request Mechanic
+              <span className="hidden xl:inline">Mechanic</span>
             </button>
-            <button onClick={() => setShowAppointmentModal(true)} className="hidden sm:flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+            <button
+              onClick={logout}
+              className="flex items-center gap-1 px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+              title="Logout"
+            >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
               </svg>
-              Book Appointment
+              <span className="hidden sm:inline">Logout</span>
             </button>
           </div>
         </header>
@@ -388,24 +387,24 @@ export default function Home() {
         {/* Messages Area */}
         <div className="flex-1 overflow-y-auto">
           {messages.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full px-4 text-center">
-              <div className="max-w-2xl">
-                <div className="mb-8">
-                  <div className="inline-flex items-center justify-center w-20 h-20 mb-4 bg-gradient-to-br from-orange-500 to-red-600 rounded-2xl">
-                    <svg className="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 20 20">
+            <div className="flex flex-col items-center justify-center h-full px-3 sm:px-4 py-6 text-center overflow-y-auto">
+              <div className="max-w-2xl w-full">
+                <div className="mb-6 sm:mb-8">
+                  <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 mb-3 sm:mb-4 bg-gradient-to-br from-orange-500 to-red-600 rounded-2xl">
+                    <svg className="w-8 h-8 sm:w-10 sm:h-10 text-white" fill="currentColor" viewBox="0 0 20 20">
                       <path d="M13 7H7v6h6V7z" />
                       <path fillRule="evenodd" d="M7 2a1 1 0 012 0v1h2V2a1 1 0 112 0v1h2a2 2 0 012 2v2h1a1 1 0 110 2h-1v2h1a1 1 0 110 2h-1v2a2 2 0 01-2 2h-2v1a1 1 0 11-2 0v-1H9v1a1 1 0 11-2 0v-1H5a2 2 0 01-2-2v-2H2a1 1 0 110-2h1V9H2a1 1 0 010-2h1V5a2 2 0 012-2h2V2zM5 5h10v10H5V5z" clipRule="evenodd" />
                     </svg>
                   </div>
-                  <h1 className="text-3xl font-bold text-gray-900 mb-3">
+                  <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2 sm:mb-3">
                     Welcome to AutoDiag AI
                   </h1>
-                  <p className="text-lg text-gray-600 mb-8">
+                  <p className="text-base sm:text-lg text-gray-600 mb-6 sm:mb-8">
                     Your intelligent automotive diagnostic assistant. Describe your car issues and get instant, accurate diagnostics.
                   </p>
                 </div>
 
-                <div className="grid sm:grid-cols-2 gap-4 mb-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-6 sm:mb-8">
                   {[
                     {
                       icon: (
@@ -444,15 +443,15 @@ export default function Home() {
                       description: 'Book appointments with trusted mechanics'
                     },
                   ].map((feature, index) => (
-                    <div key={index} className="p-4 bg-gray-50 rounded-xl text-left">
-                      <div className="text-blue-600 mb-2">{feature.icon}</div>
-                      <h3 className="font-semibold text-gray-900 mb-1">{feature.title}</h3>
-                      <p className="text-sm text-gray-600">{feature.description}</p>
+                    <div key={index} className="p-3 sm:p-4 bg-gray-50 rounded-lg sm:rounded-xl text-left">
+                      <div className="text-blue-600 mb-1.5 sm:mb-2">{feature.icon}</div>
+                      <h3 className="text-sm sm:text-base font-semibold text-gray-900 mb-1">{feature.title}</h3>
+                      <p className="text-xs sm:text-sm text-gray-600">{feature.description}</p>
                     </div>
                   ))}
                 </div>
 
-                <div className="text-left bg-blue-50 border border-blue-200 rounded-xl p-4">
+                <div className="text-left bg-blue-50 border border-blue-200 rounded-lg sm:rounded-xl p-3 sm:p-4">
                   <h3 className="font-semibold text-blue-900 mb-2 flex items-center gap-2">
                     <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
@@ -508,26 +507,26 @@ export default function Home() {
 
       {/* Request Mechanic Modal */}
       {showRequestMechanicModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg max-w-2xl w-full p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-gray-900">Request Mechanic Assistance</h2>
-              <button onClick={() => setShowRequestMechanicModal(false)} className="text-gray-400 hover:text-gray-600">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-3 sm:p-4">
+          <div className="bg-white rounded-lg max-w-2xl w-full p-4 sm:p-6 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-4 sm:mb-6">
+              <h2 className="text-lg sm:text-xl font-bold text-gray-900">Request Mechanic Assistance</h2>
+              <button onClick={() => setShowRequestMechanicModal(false)} className="text-gray-400 hover:text-gray-600 p-1">
+                <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
             
-            <div className="space-y-4">
-              <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-                <div className="flex gap-3">
-                  <svg className="w-6 h-6 text-orange-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="space-y-3 sm:space-y-4">
+              <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 sm:p-4">
+                <div className="flex gap-2 sm:gap-3">
+                  <svg className="w-5 h-5 sm:w-6 sm:h-6 text-orange-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                   <div>
-                    <h3 className="font-semibold text-orange-900 mb-1">How This Works</h3>
-                    <ul className="text-sm text-orange-800 space-y-1">
+                    <h3 className="text-sm sm:text-base font-semibold text-orange-900 mb-1">How This Works</h3>
+                    <ul className="text-xs sm:text-sm text-orange-800 space-y-0.5 sm:space-y-1">
                       <li>• Your complete chat history will be shared with available mechanics</li>
                       <li>• Mechanics can review your issue and provide professional advice</li>
                       <li>• The first mechanic to accept will be assigned to help you</li>
@@ -537,26 +536,26 @@ export default function Home() {
                 </div>
               </div>
 
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <h3 className="font-semibold text-blue-900 mb-2">Your Request Includes:</h3>
-                <div className="text-sm text-blue-800 space-y-1">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 sm:p-4">
+                <h3 className="text-sm sm:text-base font-semibold text-blue-900 mb-2">Your Request Includes:</h3>
+                <div className="text-xs sm:text-sm text-blue-800 space-y-0.5 sm:space-y-1">
                   <p>📝 <strong>{messages.length} messages</strong> from your conversation</p>
                   <p>👤 Your contact: <strong>{user.name}</strong> ({user.email})</p>
                   <p>⏰ Current time: <strong>{new Date().toLocaleString()}</strong></p>
                 </div>
               </div>
 
-              <div className="flex gap-3 pt-4">
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-3 sm:pt-4">
                 <button
                   onClick={() => setShowRequestMechanicModal(false)}
-                  className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition-colors"
+                  className="flex-1 px-4 py-2.5 sm:py-3 border border-gray-300 text-sm sm:text-base text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleRequestMechanic}
                   disabled={requestingMechanic}
-                  className="flex-1 px-4 py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:bg-gray-400 font-medium transition-colors"
+                  className="flex-1 px-4 py-2.5 sm:py-3 text-sm sm:text-base bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:bg-gray-400 font-medium transition-colors"
                 >
                   {requestingMechanic ? 'Requesting...' : 'Request Mechanic Help'}
                 </button>
@@ -568,25 +567,25 @@ export default function Home() {
 
       {/* Appointment Modal */}
       {showAppointmentModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg max-w-2xl w-full p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-gray-900">Book an Appointment</h2>
-              <button onClick={() => setShowAppointmentModal(false)} className="text-gray-400 hover:text-gray-600">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-3 sm:p-4">
+          <div className="bg-white rounded-lg max-w-2xl w-full p-4 sm:p-6">
+            <div className="flex items-center justify-between mb-4 sm:mb-6">
+              <h2 className="text-lg sm:text-xl font-bold text-gray-900">Book an Appointment</h2>
+              <button onClick={() => setShowAppointmentModal(false)} className="text-gray-400 hover:text-gray-600 p-1">
+                <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
             
-            <div className="text-center py-8">
-              <p className="text-gray-600 mb-6">Browse our trusted mechanics and schedule your service</p>
+            <div className="text-center py-6 sm:py-8">
+              <p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6">Browse our trusted mechanics and schedule your service</p>
               <button
                 onClick={() => {
                   setShowAppointmentModal(false);
                   router.push('/mechanics');
                 }}
-                className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
+                className="px-5 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
               >
                 View Available Mechanics
               </button>
