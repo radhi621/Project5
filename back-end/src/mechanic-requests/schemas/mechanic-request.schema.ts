@@ -53,6 +53,9 @@ export class MechanicRequest {
 
   @Prop()
   reopenRequestedAt: Date;
+
+  @Prop({ default: false })
+  isRated: boolean;
 }
 
 export const MechanicRequestSchema =

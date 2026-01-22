@@ -5,6 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { useAuth } from '../../contexts/AuthContext';
 import { useSocket } from '../../contexts/SocketContext';
 import { authenticatedFetch } from '../../utils/api';
+import RatingModal from '../../components/RatingModal';
 
 interface Message {
   senderId: string;
@@ -16,11 +17,13 @@ interface Message {
 
 interface ChatSession {
   _id: string;
+  mechanicId: string;
   mechanicName: string;
   mechanicEmail: string;
   status: string;
   messages: Message[];
   createdAt: string;
+  isRated?: boolean;
 }
 
 export default function UserChatPage() {
@@ -32,6 +35,7 @@ export default function UserChatPage() {
   const [loading, setLoading] = useState(true);
   const [messageInput, setMessageInput] = useState('');
   const [sending, setSending] = useState(false);
+  const [showRatingModal, setShowRatingModal] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const requestId = params?.id as string;
@@ -77,6 +81,8 @@ export default function UserChatPage() {
           if (!prev) return prev;
           return { ...prev, status: 'completed' };
         });
+        // Show rating modal when chat completes
+        setShowRatingModal(true);
       }
     });
 
@@ -89,6 +95,13 @@ export default function UserChatPage() {
   useEffect(() => {
     scrollToBottom();
   }, [session?.messages]);
+
+  useEffect(() => {
+    // Show rating modal if chat is completed and not yet rated
+    if (session?.status === 'completed' && !session?.isRated) {
+      setShowRatingModal(true);
+    }
+  }, [session?.status, session?.isRated]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -137,6 +150,30 @@ export default function UserChatPage() {
       alert('Failed to send message');
     } finally {
       setSending(false);
+    }
+  };
+
+  const handleSubmitRating = async (rating: number, comment: string) => {
+    try {
+      const response = await authenticatedFetch('http://localhost:3001/api/reviews', {
+        method: 'POST',
+        body: JSON.stringify({
+          requestId,
+          rating,
+          comment,
+        }),
+      });
+
+      if (response.ok) {
+        // Update session to mark as rated
+        setSession(prev => prev ? { ...prev, isRated: true } : prev);
+        alert('Thank you for your review!');
+      } else {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to submit review');
+      }
+    } catch (error: any) {
+      throw new Error(error.message || 'Failed to submit review');
     }
   };
 
@@ -276,13 +313,24 @@ export default function UserChatPage() {
         <div className="bg-yellow-900 border-t border-yellow-700 px-6 py-3 flex items-center justify-between">
           <p className="text-yellow-100">
             This chat has been completed by the mechanic.
+            {!session.isRated && ' Please rate your experience!'}
           </p>
-          <button
-            onClick={handleRequestReopen}
-            className="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg transition-colors"
-          >
-            Request Reopen
-          </button>
+          <div className="flex gap-2">
+            {!session.isRated && (
+              <button
+                onClick={() => setShowRatingModal(true)}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+              >
+                Rate Mechanic
+              </button>
+            )}
+            <button
+              onClick={handleRequestReopen}
+              className="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg transition-colors"
+            >
+              Request Reopen
+            </button>
+          </div>
         </div>
       )}
 
@@ -322,6 +370,15 @@ export default function UserChatPage() {
           )}
         </form>
       )}
+
+      {/* Rating Modal */}
+      <RatingModal
+        isOpen={showRatingModal}
+        onClose={() => setShowRatingModal(false)}
+        mechanicName={session.mechanicName}
+        requestId={requestId}
+        onSubmit={handleSubmitRating}
+      />
     </div>
   );
 }

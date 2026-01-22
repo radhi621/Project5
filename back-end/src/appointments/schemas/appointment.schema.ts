@@ -23,7 +23,16 @@ export class Appointment {
   @Prop({ required: true })
   date: Date;
 
-  @Prop({ default: 'pending', enum: ['pending', 'confirmed', 'completed', 'cancelled'] })
+  @Prop({ required: true })
+  timeSlot: string; // e.g., "09:00-10:00", "14:00-15:00"
+
+  @Prop({ required: true })
+  serviceType: string; // e.g., "Engine Repair", "Oil Change", etc.
+
+  @Prop()
+  estimatedDuration: number; // in minutes
+
+  @Prop({ default: 'pending', enum: ['pending', 'confirmed', 'completed', 'cancelled', 'declined'] })
   status: string;
 
   @Prop()
@@ -34,6 +43,15 @@ export class Appointment {
 
   @Prop()
   userEmail?: string;
+
+  @Prop()
+  cancellationReason?: string;
+
+  @Prop()
+  confirmedAt?: Date;
+
+  @Prop()
+  completedAt?: Date;
 
   @Prop({ default: true })
   isActive: boolean;

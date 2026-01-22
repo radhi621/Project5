@@ -44,6 +44,30 @@ export class AppointmentsController {
     return this.appointmentsService.getTodayAppointments();
   }
 
+  @Get('mechanic/:mechanicId/availability')
+  getAvailableSlots(
+    @Param('mechanicId') mechanicId: string,
+    @Query('date') date: string
+  ) {
+    return this.appointmentsService.getAvailableTimeSlots(mechanicId, date);
+  }
+
+  @Get('mechanic/:mechanicId')
+  findByMechanic(
+    @Param('mechanicId') mechanicId: string,
+    @Query('status') status?: string
+  ) {
+    return this.appointmentsService.findByMechanic(mechanicId, status);
+  }
+
+  @Get('user/:userId')
+  findByUser(
+    @Param('userId') userId: string,
+    @Query('status') status?: string
+  ) {
+    return this.appointmentsService.findByUser(userId, status);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.appointmentsService.findOne(id);
@@ -62,5 +86,31 @@ export class AppointmentsController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.appointmentsService.remove(id);
+  }
+
+  @Patch(':id/confirm')
+  @UseGuards(RolesGuard)
+  @Roles('mechanic')
+  confirmAppointment(@Param('id') id: string) {
+    return this.appointmentsService.confirmAppointment(id);
+  }
+
+  @Patch(':id/decline')
+  @UseGuards(RolesGuard)
+  @Roles('mechanic')
+  declineAppointment(@Param('id') id: string, @Body('reason') reason?: string) {
+    return this.appointmentsService.declineAppointment(id, reason);
+  }
+
+  @Patch(':id/cancel')
+  cancelAppointment(@Param('id') id: string, @Body('reason') reason?: string) {
+    return this.appointmentsService.cancelAppointment(id, reason);
+  }
+
+  @Patch(':id/complete')
+  @UseGuards(RolesGuard)
+  @Roles('mechanic')
+  completeAppointment(@Param('id') id: string) {
+    return this.appointmentsService.completeAppointment(id);
   }
 }

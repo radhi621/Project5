@@ -45,7 +45,7 @@ export default function MechanicDashboard() {
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState<'pending' | 'history'>('pending');
+  const [activeTab, setActiveTab] = useState<'pending' | 'history' | 'appointments'>('pending');
   
   // Form state
   const [formData, setFormData] = useState({
@@ -342,155 +342,58 @@ export default function MechanicDashboard() {
           </div>
         </div>
 
-        {/* Pending Requests Section */}
-        {pendingRequests.length > 0 && (
-          <div className="mt-6 bg-white rounded-lg shadow-sm">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-lg font-semibold text-gray-900">Pending Help Requests</h2>
-                  <p className="text-sm text-gray-500 mt-1">Users seeking mechanic assistance</p>
-                </div>
-                <span className="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-sm font-semibold">
-                  {pendingRequests.length} new
-                </span>
-              </div>
-            </div>
-
-            <div className="p-6">
-              <div className="space-y-4">
-                {pendingRequests.map((request) => (
-                  <div 
-                    key={request._id}
-                    className="border border-gray-200 rounded-lg p-4 hover:border-orange-300 hover:bg-orange-50 transition-colors cursor-pointer"
-                    onClick={() => router.push(`/mechanic-chat/${request._id}`)}
-                  >
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold">
-                          {request.userName.charAt(0)}
-                        </div>
-                        <div>
-                          <h3 className="font-semibold text-gray-900">{request.userName}</h3>
-                          <p className="text-sm text-gray-600">{request.userEmail}</p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <span className="text-xs text-gray-500">
-                          {new Date(request.createdAt).toLocaleString()}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="bg-gray-50 rounded-lg p-3 mb-3">
-                      <p className="text-sm text-gray-700 mb-2">
-                        <strong>Conversation preview:</strong>
-                      </p>
-                      <div className="text-xs text-gray-600 space-y-1 max-h-20 overflow-hidden">
-                        {request.messages?.slice(0, 2).map((msg, idx) => (
-                          <p key={idx} className="truncate">
-                            <span className="font-semibold">{msg.senderRole === 'user' ? 'User' : 'Mechanic'}:</span> {msg.content}
-                          </p>
-                        ))}
-                      </div>
-                      <p className="text-xs text-gray-500 mt-2">
-                        {request.messages?.length || 0} messages in conversation
-                      </p>
-                    </div>
-
-                    <button className="w-full px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 text-sm font-medium">
-                      View Full Request & Respond
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Request History Section */}
+        {/* Tab Navigation */}
         <div className="mt-6 bg-white rounded-lg shadow-sm">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-lg font-semibold text-gray-900">My Request History</h2>
-                <p className="text-sm text-gray-500 mt-1">Requests you've accepted or declined</p>
-              </div>
-              <span className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-semibold">
-                {requestHistory.length} total
-              </span>
-            </div>
+          <div className="border-b border-gray-200">
+            <nav className="flex -mb-px">
+              <button
+                onClick={() => setActiveTab('pending')}
+                className={`py-4 px-6 text-sm font-medium border-b-2 transition-colors ${
+                  activeTab === 'pending'
+                    ? 'border-blue-600 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                Pending Requests
+                {pendingRequests.length > 0 && (
+                  <span className="ml-2 px-2 py-0.5 bg-orange-100 text-orange-800 rounded-full text-xs">
+                    {pendingRequests.length}
+                  </span>
+                )}
+              </button>
+              <button
+                onClick={() => setActiveTab('appointments')}
+                className={`py-4 px-6 text-sm font-medium border-b-2 transition-colors ${
+                  activeTab === 'appointments'
+                    ? 'border-blue-600 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                Appointments
+              </button>
+              <button
+                onClick={() => setActiveTab('history')}
+                className={`py-4 px-6 text-sm font-medium border-b-2 transition-colors ${
+                  activeTab === 'history'
+                    ? 'border-blue-600 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                Request History
+              </button>
+            </nav>
           </div>
 
+          {/* Tab Content */}
           <div className="p-6">
-            {requestHistory.length === 0 ? (
-              <div className="text-center py-8">
-                <div className="inline-flex items-center justify-center w-12 h-12 bg-gray-100 rounded-full mb-3">
-                  <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                </div>
-                <p className="text-gray-500">No request history yet</p>
-                <p className="text-sm text-gray-400 mt-1">Accepted and declined requests will appear here</p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {requestHistory.map((request) => (
-                  <div 
-                    key={request._id}
-                    className="border border-gray-200 rounded-lg p-4"
-                  >
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gray-500 to-gray-600 flex items-center justify-center text-white font-bold">
-                          {request.userName.charAt(0)}
-                        </div>
-                        <div>
-                          <h3 className="font-semibold text-gray-900">{request.userName}</h3>
-                          <p className="text-sm text-gray-600">{request.userEmail}</p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        {request.status === 'completed' && (
-                          <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-semibold">
-                            ✓ Completed
-                          </span>
-                        )}
-                        {request.status === 'active' && (
-                          <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-semibold">
-                            Active
-                          </span>
-                        )}
-                        {request.status === 'cancelled' && (
-                          <span className="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs font-semibold">
-                            ✗ Cancelled
-                          </span>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4 mb-3 text-sm">
-                      <div>
-                        <span className="text-gray-500">Requested:</span>
-                        <p className="text-gray-900">{new Date(request.createdAt).toLocaleString()}</p>
-                      </div>
-                      {request.completedAt && (
-                        <div>
-                          <span className="text-gray-500">Completed:</span>
-                          <p className="text-gray-900">{new Date(request.completedAt).toLocaleString()}</p>
-                        </div>
-                      )}
-                    </div>
-
-                    <button
-                      onClick={() => router.push(`/mechanic-chat/${request._id}`)}
-                      className="text-sm text-blue-600 hover:text-blue-800 font-medium"
-                    >
-                      View Details →
-                    </button>
-                  </div>
-                ))}
-              </div>
+            {activeTab === 'pending' && (
+              <PendingRequestsTab requests={pendingRequests} />
+            )}
+            {activeTab === 'appointments' && (
+              <AppointmentsTab mechanicId={profile._id} />
+            )}
+            {activeTab === 'history' && (
+              <RequestHistoryTab history={requestHistory} />
             )}
           </div>
         </div>
@@ -694,6 +597,311 @@ export default function MechanicDashboard() {
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+// Tab Components
+function PendingRequestsTab({ requests }: { requests: MechanicRequest[] }) {
+  if (requests.length === 0) {
+    return (
+      <div className="text-center py-8">
+        <div className="inline-flex items-center justify-center w-12 h-12 bg-gray-100 rounded-full mb-3">
+          <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+          </svg>
+        </div>
+        <p className="text-gray-500">No pending requests</p>
+        <p className="text-sm text-gray-400 mt-1">New requests will appear here</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {requests.map((request) => (
+        <div key={request._id} className="border border-gray-200 rounded-lg p-4">
+          <div className="flex items-start justify-between mb-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold">
+                {request.userName.charAt(0).toUpperCase()}
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900">{request.userName}</h3>
+                <p className="text-sm text-gray-500">{new Date(request.createdAt).toLocaleString()}</p>
+              </div>
+            </div>
+            <span className="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-sm font-medium">
+              Pending
+            </span>
+          </div>
+
+          {request.messages.length > 0 && (
+            <div className="mb-3 p-3 bg-gray-50 rounded-lg">
+              <p className="text-sm text-gray-700">{request.messages[0].content}</p>
+            </div>
+          )}
+
+          <button className="w-full px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 text-sm font-medium">
+            View Full Request & Respond
+          </button>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function RequestHistoryTab({ history }: { history: MechanicRequest[] }) {
+  if (history.length === 0) {
+    return (
+      <div className="text-center py-8">
+        <div className="inline-flex items-center justify-center w-12 h-12 bg-gray-100 rounded-full mb-3">
+          <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+        </div>
+        <p className="text-gray-500">No request history yet</p>
+        <p className="text-sm text-gray-400 mt-1">Accepted and declined requests will appear here</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {history.map((request) => (
+        <div key={request._id} className="border border-gray-200 rounded-lg p-4">
+          <div className="flex items-start justify-between mb-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gray-500 to-gray-600 flex items-center justify-center text-white font-bold">
+                {request.userName.charAt(0).toUpperCase()}
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900">{request.userName}</h3>
+                <p className="text-sm text-gray-500">{new Date(request.createdAt).toLocaleString()}</p>
+              </div>
+            </div>
+            <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+              request.status === 'completed' ? 'bg-green-100 text-green-800' :
+              request.status === 'active' ? 'bg-blue-100 text-blue-800' :
+              request.status === 'cancelled' ? 'bg-red-100 text-red-800' :
+              'bg-gray-100 text-gray-800'
+            }`}>
+              {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
+            </span>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function AppointmentsTab({ mechanicId }: { mechanicId: string }) {
+  const [appointments, setAppointments] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState<'all' | 'pending' | 'confirmed' | 'completed'>('all');
+
+  useEffect(() => {
+    loadAppointments();
+  }, [filter]);
+
+  const loadAppointments = async () => {
+    setLoading(true);
+    try {
+      const statusParam = filter !== 'all' ? `?status=${filter}` : '?status=all';
+      const url = `http://localhost:3001/api/appointments/mechanic/${mechanicId}${statusParam}`;
+      console.log('Loading appointments for mechanic:', mechanicId);
+      console.log('Fetching URL:', url);
+      
+      const response = await authenticatedFetch(url);
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Appointments received:', data);
+        setAppointments(data);
+      } else {
+        console.error('Failed to fetch appointments, status:', response.status);
+      }
+    } catch (error) {
+      console.error('Failed to load appointments:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleConfirm = async (id: string) => {
+    try {
+      const response = await authenticatedFetch(
+        `http://localhost:3001/api/appointments/${id}/confirm`,
+        { method: 'PATCH' }
+      );
+      if (response.ok) {
+        alert('Appointment confirmed!');
+        loadAppointments();
+      }
+    } catch (error) {
+      alert('Failed to confirm appointment');
+    }
+  };
+
+  const handleDecline = async (id: string) => {
+    const reason = prompt('Please provide a reason for declining:');
+    if (!reason) return;
+
+    try {
+      const response = await authenticatedFetch(
+        `http://localhost:3001/api/appointments/${id}/decline`,
+        {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ reason }),
+        }
+      );
+      if (response.ok) {
+        alert('Appointment declined');
+        loadAppointments();
+      }
+    } catch (error) {
+      alert('Failed to decline appointment');
+    }
+  };
+
+  const handleComplete = async (id: string) => {
+    if (!confirm('Mark this appointment as completed?')) return;
+
+    try {
+      const response = await authenticatedFetch(
+        `http://localhost:3001/api/appointments/${id}/complete`,
+        { method: 'PATCH' }
+      );
+      if (response.ok) {
+        alert('Appointment marked as completed!');
+        loadAppointments();
+      }
+    } catch (error) {
+      alert('Failed to complete appointment');
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="text-center py-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+        <p className="mt-2 text-gray-500">Loading appointments...</p>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      {/* Filter */}
+      <div className="flex gap-2 mb-6">
+        {['all', 'pending', 'confirmed', 'completed'].map((status) => (
+          <button
+            key={status}
+            onClick={() => setFilter(status as any)}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              filter === status
+                ? 'bg-blue-600 text-white'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            {status.charAt(0).toUpperCase() + status.slice(1)}
+          </button>
+        ))}
+      </div>
+
+      {/* Appointments List */}
+      {appointments.length === 0 ? (
+        <div className="text-center py-8">
+          <div className="inline-flex items-center justify-center w-12 h-12 bg-gray-100 rounded-full mb-3">
+            <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          </div>
+          <p className="text-gray-500">No appointments found</p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {appointments.map((apt) => (
+            <div key={apt._id} className="border border-gray-200 rounded-lg p-4">
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <h3 className="font-semibold text-gray-900">{apt.userName}</h3>
+                  <p className="text-sm text-gray-600">{apt.serviceType}</p>
+                </div>
+                <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                  apt.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                  apt.status === 'confirmed' ? 'bg-green-100 text-green-800' :
+                  apt.status === 'completed' ? 'bg-blue-100 text-blue-800' :
+                  apt.status === 'declined' ? 'bg-red-100 text-red-800' :
+                  'bg-gray-100 text-gray-800'
+                }`}>
+                  {apt.status.charAt(0).toUpperCase() + apt.status.slice(1)}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 mb-4 text-sm">
+                <div>
+                  <span className="text-gray-500">Date:</span>
+                  <span className="ml-2 font-medium">{new Date(apt.date).toLocaleDateString()}</span>
+                </div>
+                <div>
+                  <span className="text-gray-500">Time:</span>
+                  <span className="ml-2 font-medium">{apt.timeSlot}</span>
+                </div>
+                <div>
+                  <span className="text-gray-500">Duration:</span>
+                  <span className="ml-2 font-medium">{apt.estimatedDuration} min</span>
+                </div>
+                <div>
+                  <span className="text-gray-500">Booked:</span>
+                  <span className="ml-2 font-medium">{new Date(apt.createdAt).toLocaleDateString()}</span>
+                </div>
+              </div>
+
+              {apt.notes && (
+                <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+                  <p className="text-sm text-gray-600 font-medium">Notes:</p>
+                  <p className="text-sm text-gray-700">{apt.notes}</p>
+                </div>
+              )}
+
+              {apt.cancellationReason && (
+                <div className="mb-4 p-3 bg-red-50 rounded-lg">
+                  <p className="text-sm text-red-600 font-medium">Decline Reason:</p>
+                  <p className="text-sm text-red-700">{apt.cancellationReason}</p>
+                </div>
+              )}
+
+              {/* Actions */}
+              {apt.status === 'pending' && (
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handleConfirm(apt._id)}
+                    className="flex-1 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 text-sm font-medium"
+                  >
+                    Confirm
+                  </button>
+                  <button
+                    onClick={() => handleDecline(apt._id)}
+                    className="flex-1 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 text-sm font-medium"
+                  >
+                    Decline
+                  </button>
+                </div>
+              )}
+
+              {apt.status === 'confirmed' && (
+                <button
+                  onClick={() => handleComplete(apt._id)}
+                  className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm font-medium"
+                >
+                  Mark as Completed
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

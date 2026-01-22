@@ -4,12 +4,14 @@ import { Model } from 'mongoose';
 import { Appointment, AppointmentDocument } from './schemas/appointment.schema';
 import { CreateAppointmentDto, UpdateAppointmentDto } from './dto/appointment.dto';
 import { ActivityService } from '../activity/activity.service';
+import { MechanicsService } from '../mechanics/mechanics.service';
 
 @Injectable()
 export class AppointmentsService {
   constructor(
     @InjectModel(Appointment.name) private appointmentModel: Model<AppointmentDocument>,
     private activityService: ActivityService,
+    private mechanicsService: MechanicsService,
   ) {}
 
   async create(createAppointmentDto: CreateAppointmentDto): Promise<Appointment> {
@@ -77,6 +79,134 @@ export class AppointmentsService {
     if (!result) {
       throw new NotFoundException(`Appointment with ID ${id} not found`);
     }
+  }
+
+  async getAvailableTimeSlots(mechanicId: string, date: string): Promise<string[]> {
+    const allSlots = [
+      '09:00-10:00', '10:00-11:00', '11:00-12:00',
+      '12:00-13:00', '13:00-14:00', '14:00-15:00',
+      '15:00-16:00', '16:00-17:00', '17:00-18:00'
+    ];
+
+    const startDate = new Date(date);
+    startDate.setHours(0, 0, 0, 0);
+    const endDate = new Date(date);
+    endDate.setHours(23, 59, 59, 999);
+
+    // Get existing appointments for this mechanic on this date
+    const existingAppointments = await this.appointmentModel.find({
+      mechanicId,
+      date: { $gte: startDate, $lte: endDate },
+      status: { $in: ['pending', 'confirmed'] },
+      isActive: true,
+    }).exec();
+
+    // Filter out booked time slots
+    const bookedSlots = existingAppointments.map(apt => apt.timeSlot);
+    return allSlots.filter(slot => !bookedSlots.includes(slot));
+  }
+
+  async findByMechanic(mechanicId: string, status?: string): Promise<Appointment[]> {
+    const filter: any = { mechanicId, isActive: true };
+    if (status && status !== 'all') {
+      filter.status = status;
+    }
+    return this.appointmentModel.find(filter).sort({ date: 1 }).exec();
+  }
+
+  async findByUser(userId: string, status?: string): Promise<Appointment[]> {
+    const filter: any = { userId, isActive: true };
+    if (status && status !== 'all') {
+      filter.status = status;
+    }
+    return this.appointmentModel.find(filter).sort({ date: -1 }).exec();
+  }
+
+  async confirmAppointment(id: string): Promise<Appointment> {
+    const updated = await this.appointmentModel
+      .findByIdAndUpdate(
+        id,
+        { status: 'confirmed', confirmedAt: new Date() },
+        { new: true }
+      )
+      .exec();
+    if (!updated) {
+      throw new NotFoundException(`Appointment with ID ${id} not found`);
+    }
+
+    await this.activityService.log(
+      'appointment',
+      'Appointment confirmed',
+      updated.userId.toString(),
+      updated.userName,
+      { mechanic: updated.mechanicName, date: updated.date },
+    );
+
+    return updated;
+  }
+
+  async declineAppointment(id: string, reason?: string): Promise<Appointment> {
+    const updated = await this.appointmentModel
+      .findByIdAndUpdate(
+        id,
+        { status: 'declined', cancellationReason: reason },
+        { new: true }
+      )
+      .exec();
+    if (!updated) {
+      throw new NotFoundException(`Appointment with ID ${id} not found`);
+    }
+
+    await this.activityService.log(
+      'appointment',
+      'Appointment declined',
+      updated.userId.toString(),
+      updated.userName,
+      { mechanic: updated.mechanicName, reason },
+    );
+
+    return updated;
+  }
+
+  async cancelAppointment(id: string, reason?: string): Promise<Appointment> {
+    const updated = await this.appointmentModel
+      .findByIdAndUpdate(
+        id,
+        { status: 'cancelled', cancellationReason: reason },
+        { new: true }
+      )
+      .exec();
+    if (!updated) {
+      throw new NotFoundException(`Appointment with ID ${id} not found`);
+    }
+
+    return updated;
+  }
+
+  async completeAppointment(id: string): Promise<Appointment> {
+    const updated = await this.appointmentModel
+      .findByIdAndUpdate(
+        id,
+        { status: 'completed', completedAt: new Date() },
+        { new: true }
+      )
+      .exec();
+    if (!updated) {
+      throw new NotFoundException(`Appointment with ID ${id} not found`);
+    }
+
+    // Increment mechanic's completed jobs count
+    await this.mechanicsService.incrementCompletedJobs(updated.mechanicId.toString());
+
+    await this.activityService.log(
+      'appointment',
+      'Appointment completed',
+      updated.userId.toString(),
+      updated.userName,
+      { mechanic: updated.mechanicName, date: updated.date },
+    );
+
+    return updated;
   }
 
   async getStats(): Promise<any> {

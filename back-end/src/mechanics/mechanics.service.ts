@@ -79,7 +79,7 @@ export class MechanicsService {
     return this.update(id, { availability }, user);
   }
 
-  async incrementJobCount(id: string): Promise<void> {
+  async incrementCompletedJobs(id: string): Promise<void> {
     await this.mechanicModel
       .findByIdAndUpdate(id, { $inc: { completedJobs: 1 } })
       .exec();

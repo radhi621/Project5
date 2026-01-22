@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, IsDateString, IsOptional, IsMongoId } from 'class-validator';
+import { IsNotEmpty, IsString, IsDateString, IsOptional, IsMongoId, IsNumber } from 'class-validator';
 
 export class CreateAppointmentDto {
   @IsNotEmpty()
@@ -25,6 +25,18 @@ export class CreateAppointmentDto {
   @IsDateString()
   date: string;
 
+  @IsNotEmpty()
+  @IsString()
+  timeSlot: string;
+
+  @IsNotEmpty()
+  @IsString()
+  serviceType: string;
+
+  @IsOptional()
+  @IsNumber()
+  estimatedDuration?: number;
+
   @IsOptional()
   @IsString()
   notes?: string;
@@ -45,9 +57,17 @@ export class UpdateAppointmentDto {
 
   @IsOptional()
   @IsString()
+  timeSlot?: string;
+
+  @IsOptional()
+  @IsString()
   status?: string;
 
   @IsOptional()
   @IsString()
   notes?: string;
+
+  @IsOptional()
+  @IsString()
+  cancellationReason?: string;
 }

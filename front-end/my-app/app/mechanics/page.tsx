@@ -121,12 +121,20 @@ export default function MechanicsPage() {
                 Browse trusted mechanics and book your service
               </p>
             </div>
-            <button
-              onClick={() => router.push('/')}
-              className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 w-full sm:w-auto"
-            >
-              Back to Chat
-            </button>
+            <div className="flex gap-2 w-full sm:w-auto">
+              <button
+                onClick={() => router.push('/appointments')}
+                className="flex-1 sm:flex-none px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700"
+              >
+                My Appointments
+              </button>
+              <button
+                onClick={() => router.push('/')}
+                className="flex-1 sm:flex-none px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+              >
+                Back to Chat
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -308,6 +316,7 @@ export default function MechanicsPage() {
                       </p>
                     </div>
                     <button
+                      onClick={() => router.push(`/book-appointment/${mechanic._id}`)}
                       disabled={mechanic.availability === 'offline'}
                       className={`px-4 py-2 text-sm font-medium rounded-lg ${
                         mechanic.availability === 'offline'
@@ -315,7 +324,7 @@ export default function MechanicsPage() {
                           : 'bg-blue-600 text-white hover:bg-blue-700'
                       }`}
                     >
-                      Contact
+                      {mechanic.availability === 'offline' ? 'Offline' : 'Book Appointment'}
                     </button>
                   </div>
                 </div>

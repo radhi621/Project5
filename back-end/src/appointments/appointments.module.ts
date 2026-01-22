@@ -4,11 +4,13 @@ import { AppointmentsController } from './appointments.controller';
 import { AppointmentsService } from './appointments.service';
 import { Appointment, AppointmentSchema } from './schemas/appointment.schema';
 import { ActivityModule } from '../activity/activity.module';
+import { MechanicsModule } from '../mechanics/mechanics.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Appointment.name, schema: AppointmentSchema }]),
     ActivityModule,
+    MechanicsModule,
   ],
   controllers: [AppointmentsController],
   providers: [AppointmentsService],
