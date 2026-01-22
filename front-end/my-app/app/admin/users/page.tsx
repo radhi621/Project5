@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import AdminSidebar from '../components/AdminSidebar';
+import { authenticatedFetch } from '../../utils/api';
 
 interface User {
   id: string;
@@ -34,12 +35,7 @@ export default function UsersPage() {
   const loadUsers = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('accessToken');
-      const response = await fetch('http://localhost:3001/api/users', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
+      const response = await authenticatedFetch('http://localhost:3001/api/users');
       console.log('Users response status:', response.status);
       
       if (response.ok) {
@@ -72,12 +68,7 @@ export default function UsersPage() {
 
   const loadStats = async () => {
     try {
-      const token = localStorage.getItem('accessToken');
-      const response = await fetch('http://localhost:3001/api/users/stats', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
+      const response = await authenticatedFetch('http://localhost:3001/api/users/stats');
       
       if (response.ok) {
         const data = await response.json();
@@ -95,12 +86,8 @@ export default function UsersPage() {
     if (!confirm('Are you sure you want to suspend this user?')) return;
     
     try {
-      const token = localStorage.getItem('accessToken');
-      const response = await fetch(`http://localhost:3001/api/users/${userId}/suspend`, {
+      const response = await authenticatedFetch(`http://localhost:3001/api/users/${userId}/suspend`, {
         method: 'PATCH',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
       });
       
       if (response.ok) {
@@ -122,13 +109,8 @@ export default function UsersPage() {
     if (!confirm(`Are you sure you want to change this user's role to ${newRole}?`)) return;
     
     try {
-      const token = localStorage.getItem('accessToken');
-      const response = await fetch(`http://localhost:3001/api/users/${userId}/role`, {
+      const response = await authenticatedFetch(`http://localhost:3001/api/users/${userId}/role`, {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
         body: JSON.stringify({ role: newRole }),
       });
       

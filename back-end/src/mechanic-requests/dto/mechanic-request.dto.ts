@@ -1,4 +1,4 @@
-import { IsString, IsEmail, IsArray, IsOptional, IsNotEmpty } from 'class-validator';
+import { IsString, IsEmail, IsOptional, IsNotEmpty, IsMongoId } from 'class-validator';
 
 export class CreateMechanicRequestDto {
   @IsString()
@@ -13,17 +13,22 @@ export class CreateMechanicRequestDto {
   @IsOptional()
   userPhone?: string;
 
-  @IsArray()
+  @IsMongoId()
   @IsNotEmpty()
-  chatHistory: {
-    role: string;
-    content: string;
-    timestamp: Date;
-  }[];
-}
+  mechanicId: string;
 
-export class RespondToRequestDto {
   @IsString()
   @IsNotEmpty()
-  responseMessage: string;
+  mechanicName: string;
+
+  @IsEmail()
+  @IsNotEmpty()
+  mechanicEmail: string;
 }
+
+export class SendMessageDto {
+  @IsString()
+  @IsNotEmpty()
+  content: string;
+}
+

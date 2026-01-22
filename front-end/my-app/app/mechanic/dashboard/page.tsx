@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useRouter } from 'next/navigation';
+import { authenticatedFetch } from '../../utils/api';
 
 interface MechanicProfile {
   _id: string;
@@ -28,15 +29,15 @@ interface MechanicRequest {
   userName: string;
   userEmail: string;
   userPhone: string;
-  chatHistory: { role: string; content: string; timestamp: string }[];
-  status: 'pending' | 'accepted' | 'denied' | 'cancelled';
+  messages: { senderId: string; senderName: string; senderRole: string; content: string; timestamp: string }[];
+  status: 'pending' | 'active' | 'completed' | 'reopen-requested' | 'cancelled';
   createdAt: string;
-  respondedAt?: string;
-  responseMessage?: string;
+  acceptedAt?: string;
+  completedAt?: string;
 }
 
 export default function MechanicDashboard() {
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const router = useRouter();
   const [profile, setProfile] = useState<MechanicProfile | null>(null);
   const [pendingRequests, setPendingRequests] = useState<MechanicRequest[]>([]);
@@ -61,25 +62,24 @@ export default function MechanicDashboard() {
   const [specialtyInput, setSpecialtyInput] = useState('');
 
   useEffect(() => {
-    if (user?.role !== 'mechanic') {
+    if (authLoading) {
+      return;
+    }
+    
+    if (!user || user.role !== 'mechanic') {
       router.push('/');
     } else {
       loadProfile();
       loadPendingRequests();
       loadRequestHistory();
     }
-  }, [user, router]);
+  }, [user, authLoading, router]);
 
   const loadProfile = useCallback(async () => {
     try {
       setLoading(true);
       // Find mechanic profile by email
-      const token = localStorage.getItem('accessToken');
-      const response = await fetch('http://localhost:3001/api/mechanics', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
+      const response = await authenticatedFetch('http://localhost:3001/api/mechanics');
       
       if (response.ok) {
         const mechanics = await response.json();
@@ -110,12 +110,7 @@ export default function MechanicDashboard() {
   const loadPendingRequests = async () => {
     try {
       console.log('Loading pending requests...');
-      const token = localStorage.getItem('accessToken');
-      const response = await fetch('http://localhost:3001/api/mechanic-requests/pending', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
+      const response = await authenticatedFetch('http://localhost:3001/api/mechanic-requests/pending');
       
       console.log('Response status:', response.status);
       if (response.ok) {
@@ -132,12 +127,7 @@ export default function MechanicDashboard() {
 
   const loadRequestHistory = async () => {
     try {
-      const token = localStorage.getItem('accessToken');
-      const response = await fetch('http://localhost:3001/api/mechanic-requests/my-history', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
+      const response = await authenticatedFetch('http://localhost:3001/api/mechanic-requests/my-chats');
       
       if (response.ok) {
         const history = await response.json();
@@ -154,13 +144,8 @@ export default function MechanicDashboard() {
     
     try {
       setSaving(true);
-      const token = localStorage.getItem('accessToken');
-      const response = await fetch(`http://localhost:3001/api/mechanics/${profile._id}`, {
+      const response = await authenticatedFetch(`http://localhost:3001/api/mechanics/${profile._id}`, {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
         body: JSON.stringify(formData),
       });
       
@@ -180,13 +165,8 @@ export default function MechanicDashboard() {
     if (!profile) return;
     
     try {
-      const token = localStorage.getItem('accessToken');
-      const response = await fetch(`http://localhost:3001/api/mechanics/${profile._id}/availability`, {
+      const response = await authenticatedFetch(`http://localhost:3001/api/mechanics/${profile._id}/availability`, {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
         body: JSON.stringify({ availability: newAvailability }),
       });
       
@@ -383,7 +363,7 @@ export default function MechanicDashboard() {
                   <div 
                     key={request._id}
                     className="border border-gray-200 rounded-lg p-4 hover:border-orange-300 hover:bg-orange-50 transition-colors cursor-pointer"
-                    onClick={() => router.push(`/mechanic/requests/${request._id}`)}
+                    onClick={() => router.push(`/mechanic-chat/${request._id}`)}
                   >
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex items-center gap-3">
@@ -407,14 +387,14 @@ export default function MechanicDashboard() {
                         <strong>Conversation preview:</strong>
                       </p>
                       <div className="text-xs text-gray-600 space-y-1 max-h-20 overflow-hidden">
-                        {request.chatHistory.slice(0, 2).map((msg, idx) => (
+                        {request.messages?.slice(0, 2).map((msg, idx) => (
                           <p key={idx} className="truncate">
-                            <span className="font-semibold">{msg.role === 'user' ? 'User' : 'AI'}:</span> {msg.content}
+                            <span className="font-semibold">{msg.senderRole === 'user' ? 'User' : 'Mechanic'}:</span> {msg.content}
                           </p>
                         ))}
                       </div>
                       <p className="text-xs text-gray-500 mt-2">
-                        {request.chatHistory.length} messages in conversation
+                        {request.messages?.length || 0} messages in conversation
                       </p>
                     </div>
 
@@ -471,14 +451,19 @@ export default function MechanicDashboard() {
                         </div>
                       </div>
                       <div className="text-right">
-                        {request.status === 'accepted' && (
+                        {request.status === 'completed' && (
                           <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-semibold">
-                            ✓ Accepted
+                            ✓ Completed
                           </span>
                         )}
-                        {request.status === 'denied' && (
+                        {request.status === 'active' && (
+                          <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-semibold">
+                            Active
+                          </span>
+                        )}
+                        {request.status === 'cancelled' && (
                           <span className="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs font-semibold">
-                            ✗ Declined
+                            ✗ Cancelled
                           </span>
                         )}
                       </div>
@@ -489,23 +474,16 @@ export default function MechanicDashboard() {
                         <span className="text-gray-500">Requested:</span>
                         <p className="text-gray-900">{new Date(request.createdAt).toLocaleString()}</p>
                       </div>
-                      {request.respondedAt && (
+                      {request.completedAt && (
                         <div>
-                          <span className="text-gray-500">Responded:</span>
-                          <p className="text-gray-900">{new Date(request.respondedAt).toLocaleString()}</p>
+                          <span className="text-gray-500">Completed:</span>
+                          <p className="text-gray-900">{new Date(request.completedAt).toLocaleString()}</p>
                         </div>
                       )}
                     </div>
 
-                    {request.responseMessage && (
-                      <div className="bg-gray-50 rounded-lg p-3 mb-3">
-                        <p className="text-xs font-semibold text-gray-500 uppercase mb-1">Your Response:</p>
-                        <p className="text-sm text-gray-900">{request.responseMessage}</p>
-                      </div>
-                    )}
-
                     <button
-                      onClick={() => router.push(`/mechanic/requests/${request._id}`)}
+                      onClick={() => router.push(`/mechanic-chat/${request._id}`)}
                       className="text-sm text-blue-600 hover:text-blue-800 font-medium"
                     >
                       View Details →

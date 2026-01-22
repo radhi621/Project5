@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import AdminSidebar from './components/AdminSidebar';
+import { authenticatedFetch } from '../utils/api';
 
 interface Stats {
   users: { total: number };

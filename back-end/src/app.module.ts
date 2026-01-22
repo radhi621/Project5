@@ -13,6 +13,7 @@ import { ActivityModule } from './activity/activity.module';
 import { AppointmentsModule } from './appointments/appointments.module';
 import { HealthModule } from './health/health.module';
 import { MechanicRequestsModule } from './mechanic-requests/mechanic-requests.module';
+import { ChatGatewayModule } from './chat-gateway/chat-gateway.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { MechanicRequestsModule } from './mechanic-requests/mechanic-requests.mo
     AppointmentsModule,
     HealthModule,
     MechanicRequestsModule,
+    ChatGatewayModule,
   ],
   controllers: [AppController],
   providers: [AppService],

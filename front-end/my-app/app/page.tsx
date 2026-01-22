@@ -6,6 +6,7 @@ import { useAuth } from './contexts/AuthContext';
 import ChatMessage from './components/ChatMessage';
 import ChatInput from './components/ChatInput';
 import Sidebar from './components/Sidebar';
+import { authenticatedFetch } from './utils/api';
 
 interface Message {
   id: string;
@@ -29,8 +30,6 @@ export default function Home() {
   const [currentChatId, setCurrentChatId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showAppointmentModal, setShowAppointmentModal] = useState(false);
-  const [showRequestMechanicModal, setShowRequestMechanicModal] = useState(false);
-  const [requestingMechanic, setRequestingMechanic] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Redirect to login if not authenticated
@@ -42,11 +41,7 @@ export default function Home() {
 
   const loadChats = useCallback(async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/chat', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
-        },
-      });
+      const response = await authenticatedFetch('http://localhost:3001/api/chat');
 
       if (response.ok) {
         const chatData = await response.json();
@@ -106,11 +101,8 @@ export default function Home() {
 
   const handleDeleteChat = async (chatId: string) => {
     try {
-      const response = await fetch(`http://localhost:3001/api/chat/${chatId}`, {
+      const response = await authenticatedFetch(`http://localhost:3001/api/chat/${chatId}`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
-        },
       });
 
       if (response.ok) {
@@ -135,12 +127,8 @@ export default function Home() {
       // Create new chat if none exists
       if (!chatId) {
         const title = generateChatTitle(content || 'Image upload');
-        const response = await fetch('http://localhost:3001/api/chat', {
+        const response = await authenticatedFetch('http://localhost:3001/api/chat', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
-          },
           body: JSON.stringify({ title }),
         });
 
@@ -170,13 +158,22 @@ export default function Home() {
       }
 
       // Send message and get AI response
+      const token = localStorage.getItem('accessToken');
       const messageResponse = await fetch('http://localhost:3001/api/chat/message', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+          'Authorization': `Bearer ${token}`,
         },
         body: formData,
       });
+      
+      // Check for 401 manually since FormData requires special handling
+      if (messageResponse.status === 401) {
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('user');
+        window.location.href = '/login';
+        return;
+      }
 
       if (!messageResponse.ok) throw new Error('Failed to send message');
       
@@ -222,11 +219,7 @@ export default function Home() {
     const chat = chats.find(c => c.id === chatId);
     if (chat && chat.messages.length === 0) {
       try {
-        const response = await fetch(`http://localhost:3001/api/chat/${chatId}/messages`, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
-          },
-        });
+        const response = await authenticatedFetch(`http://localhost:3001/api/chat/${chatId}/messages`);
 
         if (response.ok) {
           const messages = await response.json();
@@ -251,47 +244,7 @@ export default function Home() {
     }
   };
 
-  const handleRequestMechanic = async () => {
-    if (!currentChatId || messages.length === 0) {
-      alert('Please have a conversation before requesting mechanic help.');
-      return;
-    }
 
-    try {
-      setRequestingMechanic(true);
-      const response = await fetch('http://localhost:3001/api/mechanic-requests', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
-        },
-        body: JSON.stringify({
-          userName: user.name,
-          userEmail: user.email,
-          userPhone: user.phone || '',
-          chatHistory: messages.map(msg => ({
-            role: msg.role,
-            content: msg.content,
-            timestamp: msg.timestamp,
-          })),
-        }),
-      });
-
-      if (response.ok) {
-        setShowRequestMechanicModal(false);
-        alert('Mechanic help requested successfully! Available mechanics will review your chat and respond.');
-      } else {
-        const errorData = await response.json().catch(() => ({}));
-        console.error('API Error:', response.status, errorData);
-        throw new Error(errorData.message || 'Failed to request mechanic');
-      }
-    } catch (error) {
-      console.error('Error requesting mechanic:', error);
-      alert(`Failed to request mechanic. ${error.message || 'Please try again.'}`);
-    } finally {
-      setRequestingMechanic(false);
-    }
-  };
 
   return (
     <div className="flex h-screen bg-white overflow-hidden">
@@ -335,16 +288,6 @@ export default function Home() {
               </svg>
               <span className="hidden md:inline">My Requests</span>
             </button>
-            <button 
-              onClick={() => router.push('/mechanics')}
-              className="flex items-center gap-2 px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
-              title="Book Appointments"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
-              <span className="hidden md:inline">Appointments</span>
-            </button>
             {user.role === 'admin' && (
               <button 
                 onClick={() => router.push('/admin')} 
@@ -371,10 +314,19 @@ export default function Home() {
               </button>
             )}
             <button 
-              onClick={() => setShowRequestMechanicModal(true)}
-              disabled={!currentChatId || messages.length === 0}
-              className="flex items-center gap-2 px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 disabled:bg-gray-400 disabled:cursor-not-allowed rounded-lg transition-colors"
-              title="Request Mechanic"
+              onClick={() => setShowAppointmentModal(true)}
+              className="flex items-center gap-2 px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
+              title="Book Appointment"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <span className="hidden xl:inline">Book</span>
+            </button>
+            <button 
+              onClick={() => router.push('/select-mechanic')}
+              className="flex items-center gap-2 px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 rounded-lg transition-colors"
+              title="Chat with Mechanic"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
@@ -516,66 +468,6 @@ export default function Home() {
         {/* Input Area */}
         <ChatInput onSendMessage={handleSendMessage} disabled={isLoading} />
       </div>
-
-      {/* Request Mechanic Modal */}
-      {showRequestMechanicModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-3 sm:p-4">
-          <div className="bg-white rounded-lg max-w-2xl w-full p-4 sm:p-6 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-4 sm:mb-6">
-              <h2 className="text-lg sm:text-xl font-bold text-gray-900">Request Mechanic Assistance</h2>
-              <button onClick={() => setShowRequestMechanicModal(false)} className="text-gray-400 hover:text-gray-600 p-1">
-                <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-            
-            <div className="space-y-3 sm:space-y-4">
-              <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 sm:p-4">
-                <div className="flex gap-2 sm:gap-3">
-                  <svg className="w-5 h-5 sm:w-6 sm:h-6 text-orange-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <div>
-                    <h3 className="text-sm sm:text-base font-semibold text-orange-900 mb-1">How This Works</h3>
-                    <ul className="text-xs sm:text-sm text-orange-800 space-y-0.5 sm:space-y-1">
-                      <li>• Your complete chat history will be shared with available mechanics</li>
-                      <li>• Mechanics can review your issue and provide professional advice</li>
-                      <li>• The first mechanic to accept will be assigned to help you</li>
-                      <li>• You'll be notified once a mechanic responds</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 sm:p-4">
-                <h3 className="text-sm sm:text-base font-semibold text-blue-900 mb-2">Your Request Includes:</h3>
-                <div className="text-xs sm:text-sm text-blue-800 space-y-0.5 sm:space-y-1">
-                  <p>📝 <strong>{messages.length} messages</strong> from your conversation</p>
-                  <p>👤 Your contact: <strong>{user.name}</strong> ({user.email})</p>
-                  <p>⏰ Current time: <strong>{new Date().toLocaleString()}</strong></p>
-                </div>
-              </div>
-
-              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-3 sm:pt-4">
-                <button
-                  onClick={() => setShowRequestMechanicModal(false)}
-                  className="flex-1 px-4 py-2.5 sm:py-3 border border-gray-300 text-sm sm:text-base text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleRequestMechanic}
-                  disabled={requestingMechanic}
-                  className="flex-1 px-4 py-2.5 sm:py-3 text-sm sm:text-base bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:bg-gray-400 font-medium transition-colors"
-                >
-                  {requestingMechanic ? 'Requesting...' : 'Request Mechanic Help'}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Appointment Modal */}
       {showAppointmentModal && (

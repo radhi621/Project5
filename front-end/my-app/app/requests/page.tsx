@@ -3,45 +3,45 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../contexts/AuthContext';
+import { authenticatedFetch } from '../utils/api';
 
 interface Request {
   _id: string;
   userName: string;
   userEmail: string;
-  userPhone: string;
-  status: 'pending' | 'accepted' | 'denied' | 'cancelled';
-  acceptedByName?: string;
-  acceptedByEmail?: string;
-  responseMessage?: string;
+  userPhone?: string;
+  mechanicName: string;
+  mechanicEmail: string;
+  status: 'pending' | 'active' | 'completed' | 'reopen-requested' | 'cancelled';
   createdAt: string;
-  respondedAt?: string;
-  chatHistory: { role: string; content: string; timestamp: string }[];
+  acceptedAt?: string;
+  completedAt?: string;
+  messages: { senderName: string; content: string; timestamp: string }[];
 }
 
 export default function MyRequestsPage() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const [requests, setRequests] = useState<Request[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedRequest, setSelectedRequest] = useState<Request | null>(null);
 
   useEffect(() => {
+    // Wait for auth to finish loading before checking user
+    if (authLoading) {
+      return;
+    }
+    
     if (!user) {
       router.push('/login');
       return;
     }
     loadRequests();
-  }, [user, router]);
+  }, [user, authLoading, router]);
 
   const loadRequests = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('accessToken');
-      const response = await fetch('http://localhost:3001/api/mechanic-requests/my-requests', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
+      const response = await authenticatedFetch('http://localhost:3001/api/mechanic-requests/my-requests');
 
       if (response.ok) {
         const data = await response.json();
@@ -55,8 +55,15 @@ export default function MyRequestsPage() {
     }
   };
 
-  if (!user) {
-    return null;
+  if (authLoading || !user) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
   }
 
   if (loading) {
@@ -86,9 +93,15 @@ export default function MyRequestsPage() {
                 </svg>
                 Back to Chat
               </button>
-              <h1 className="text-lg sm:text-2xl font-bold text-gray-900">My Mechanic Requests</h1>
-              <p className="text-xs sm:text-sm text-gray-500">Track your help requests and mechanic responses</p>
+              <h1 className="text-lg sm:text-2xl font-bold text-gray-900">My Mechanic Chats</h1>
+              <p className="text-xs sm:text-sm text-gray-500">View and manage your conversations with mechanics</p>
             </div>
+            <button
+              onClick={() => router.push('/select-mechanic')}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
+            >
+              + New Chat
+            </button>
           </div>
         </div>
       </div>
@@ -98,16 +111,16 @@ export default function MyRequestsPage() {
           <div className="bg-white rounded-lg shadow-sm p-12 text-center">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-4">
               <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
               </svg>
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">No Requests Yet</h3>
-            <p className="text-gray-600 mb-6">You haven't requested any mechanic help yet.</p>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">No Chats Yet</h3>
+            <p className="text-gray-600 mb-6">Start a conversation with a mechanic to get help with your vehicle.</p>
             <button
-              onClick={() => router.push('/')}
+              onClick={() => router.push('/select-mechanic')}
               className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
             >
-              Start a Conversation
+              Select a Mechanic
             </button>
           </div>
         ) : (
@@ -115,169 +128,64 @@ export default function MyRequestsPage() {
             {requests.map((request) => (
               <div
                 key={request._id}
-                className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow"
+                className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow cursor-pointer"
+                onClick={() => router.push(`/user-chat/${request._id}`)}
               >
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
                       <h3 className="text-lg font-semibold text-gray-900">
-                        Request from {new Date(request.createdAt).toLocaleDateString()}
+                        {request.mechanicName}
                       </h3>
                       {request.status === 'pending' && (
-                        <span className="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-sm font-semibold">
-                          Pending
+                        <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold">
+                          Pending Acceptance
                         </span>
                       )}
-                      {request.status === 'accepted' && (
+                      {request.status === 'active' && (
                         <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-semibold">
-                          Accepted
+                          ● Active
                         </span>
                       )}
-                      {request.status === 'denied' && (
-                        <span className="px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm font-semibold">
-                          Declined
+                      {request.status === 'completed' && (
+                        <span className="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-sm font-semibold">
+                          Completed
+                        </span>
+                      )}
+                      {request.status === 'reopen-requested' && (
+                        <span className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-semibold">
+                          Reopen Requested
                         </span>
                       )}
                     </div>
                     <p className="text-sm text-gray-500">
-                      Requested: {new Date(request.createdAt).toLocaleString()}
+                      Started: {new Date(request.createdAt).toLocaleString()}
+                    </p>
+                    <p className="text-sm text-blue-600 mt-1">
+                      {request.mechanicEmail}
                     </p>
                   </div>
-                  <button
-                    onClick={() => setSelectedRequest(request)}
-                    className="px-4 py-2 text-sm text-blue-600 hover:bg-blue-50 rounded-lg font-medium"
-                  >
-                    View Details
-                  </button>
+                  <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
                 </div>
 
-                {request.status === 'pending' && (
-                  <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-                    <p className="text-sm text-orange-800">
-                      🕒 Waiting for a mechanic to respond. Available mechanics can review your conversation and accept your request.
-                    </p>
+                <div className="flex items-center justify-between bg-gray-50 rounded-lg p-3">
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                    </svg>
+                    <span>{request.messages?.length || 0} messages</span>
                   </div>
-                )}
-
-                {request.status === 'accepted' && request.acceptedByName && (
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                    <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center text-white font-bold flex-shrink-0">
-                        {request.acceptedByName.charAt(0)}
-                      </div>
-                      <div className="flex-1">
-                        <p className="font-semibold text-green-900 mb-1">
-                          ✅ {request.acceptedByName} accepted your request
-                        </p>
-                        {request.respondedAt && (
-                          <p className="text-xs text-green-700 mb-2">
-                            Responded: {new Date(request.respondedAt).toLocaleString()}
-                          </p>
-                        )}
-                        {request.responseMessage && (
-                          <div className="bg-white rounded-lg p-4 mb-3 border-l-4 border-green-600">
-                            <p className="text-xs font-semibold text-gray-500 uppercase mb-1">Mechanic's Message:</p>
-                            <p className="text-sm text-gray-900 font-medium">{request.responseMessage}</p>
-                          </div>
-                        )}
-                        {!request.responseMessage && (
-                          <p className="text-xs text-gray-500 italic mb-3">No message provided</p>
-                        )}
-                        {request.acceptedByEmail && (
-                          <div className="flex flex-wrap gap-3 mt-3">
-                            <a
-                              href={`mailto:${request.acceptedByEmail}`}
-                              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium inline-flex items-center gap-2"
-                            >
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                              </svg>
-                              Email Mechanic
-                            </a>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {request.status === 'denied' && request.responseMessage && (
-                  <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                    <p className="font-semibold text-red-900 mb-2">❌ Request Declined</p>
-                    <div className="bg-white rounded-lg p-3">
-                      <p className="text-sm text-gray-900">{request.responseMessage}</p>
-                    </div>
-                  </div>
-                )}
+                  <span className="text-sm text-blue-600 font-medium">
+                    Click to open chat →
+                  </span>
+                </div>
               </div>
             ))}
           </div>
         )}
       </div>
-
-      {/* Detail Modal */}
-      {selectedRequest && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
-            <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-              <div>
-                <h2 className="text-xl font-bold text-gray-900">Request Details</h2>
-                <p className="text-sm text-gray-500">Your conversation and request status</p>
-              </div>
-              <button
-                onClick={() => setSelectedRequest(null)}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-
-            <div className="flex-1 overflow-y-auto p-6">
-              <div className="space-y-4">
-                {selectedRequest.chatHistory.map((message, index) => (
-                  <div
-                    key={index}
-                    className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                  >
-                    <div className={`max-w-[80%] ${message.role === 'user' ? 'order-2' : 'order-1'}`}>
-                      <div className="flex items-start gap-3">
-                        {message.role === 'assistant' && (
-                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center flex-shrink-0">
-                            <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                              <path d="M13 7H7v6h6V7z" />
-                            </svg>
-                          </div>
-                        )}
-                        <div className={`flex-1 ${message.role === 'user' ? 'text-right' : ''}`}>
-                          <div
-                            className={`inline-block rounded-lg px-4 py-3 ${
-                              message.role === 'user'
-                                ? 'bg-blue-600 text-white'
-                                : 'bg-gray-100 text-gray-900'
-                            }`}
-                          >
-                            <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-                          </div>
-                          <p className="text-xs text-gray-500 mt-1">
-                            {new Date(message.timestamp).toLocaleString()}
-                          </p>
-                        </div>
-                        {message.role === 'user' && (
-                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center flex-shrink-0 text-white font-semibold text-sm">
-                            {user.name.charAt(0)}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

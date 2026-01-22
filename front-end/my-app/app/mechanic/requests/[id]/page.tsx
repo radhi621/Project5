@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useAuth } from '../../../contexts/AuthContext';
+import { authenticatedFetch } from '../../../utils/api';
 
 interface MechanicRequest {
   _id: string;
@@ -10,17 +11,17 @@ interface MechanicRequest {
   userName: string;
   userEmail: string;
   userPhone: string;
-  chatHistory: { role: string; content: string; timestamp: string }[];
-  status: 'pending' | 'accepted' | 'denied' | 'cancelled';
+  messages: { senderId: string; senderName: string; senderRole: string; content: string; timestamp: string }[];
+  status: 'pending' | 'active' | 'completed' | 'reopen-requested' | 'cancelled';
   createdAt: string;
-  acceptedByName?: string;
-  responseMessage?: string;
+  acceptedAt?: string;
+  completedAt?: string;
 }
 
 export default function RequestDetailPage() {
   const router = useRouter();
   const params = useParams();
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const [request, setRequest] = useState<MechanicRequest | null>(null);
   const [loading, setLoading] = useState(true);
   const [responding, setResponding] = useState(false);
@@ -29,22 +30,21 @@ export default function RequestDetailPage() {
   const [responseMessage, setResponseMessage] = useState('');
 
   useEffect(() => {
-    if (user?.role !== 'mechanic') {
+    if (authLoading) {
+      return;
+    }
+    
+    if (!user || user.role !== 'mechanic') {
       router.push('/');
       return;
     }
     loadRequest();
-  }, [params.id, user]);
+  }, [params.id, user, authLoading]);
 
   const loadRequest = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('accessToken');
-      const response = await fetch(`http://localhost:3001/api/mechanic-requests/${params.id}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
+      const response = await authenticatedFetch(`http://localhost:3001/api/mechanic-requests/${params.id}`);
 
       if (response.ok) {
         const data = await response.json();
@@ -105,15 +105,19 @@ export default function RequestDetailPage() {
     return null;
   }
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading request...</p>
+          <p className="mt-4 text-gray-600">Loading...</p>
         </div>
       </div>
     );
+  }
+
+  if (!user) {
+    return null;
   }
 
   if (!request) {
@@ -180,7 +184,8 @@ export default function RequestDetailPage() {
                   <h3 className="font-semibold text-gray-900">{request.userName}</h3>
                   <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
                     request.status === 'pending' ? 'bg-orange-100 text-orange-800' :
-                    request.status === 'accepted' ? 'bg-green-100 text-green-800' :
+                    request.status === 'active' ? 'bg-blue-100 text-blue-800' :
+                    request.status === 'completed' ? 'bg-green-100 text-green-800' :
                     'bg-gray-100 text-gray-800'
                   }`}>
                     {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
@@ -205,19 +210,9 @@ export default function RequestDetailPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Conversation Length</label>
-                  <p className="text-gray-900">{request.chatHistory.length} messages</p>
+                  <p className="text-gray-900">{request.messages?.length || 0} messages</p>
                 </div>
               </div>
-
-              {request.status !== 'pending' && request.responseMessage && (
-                <div className="mt-6 pt-6 border-t border-gray-200">
-                  <h3 className="font-semibold text-gray-900 mb-2">Response</h3>
-                  <p className="text-sm text-gray-700 bg-gray-50 rounded-lg p-3">{request.responseMessage}</p>
-                  {request.acceptedByName && (
-                    <p className="text-xs text-gray-500 mt-2">By: {request.acceptedByName}</p>
-                  )}
-                </div>
-              )}
             </div>
           </div>
 
@@ -230,19 +225,19 @@ export default function RequestDetailPage() {
               </div>
 
               <div className="p-6 space-y-4 max-h-[600px] overflow-y-auto">
-                {request.chatHistory.map((message, index) => (
+                {request.messages?.map((message, index) => (
                   <div 
                     key={index}
-                    className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                    className={`flex gap-3 ${message.senderRole === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
                     <div className={`max-w-[80%] rounded-lg p-4 ${
-                      message.role === 'user'
+                      message.senderRole === 'user'
                         ? 'bg-blue-600 text-white'
                         : 'bg-gray-100 text-gray-900'
                     }`}>
                       <div className="flex items-center gap-2 mb-2">
                         <span className="text-xs font-semibold opacity-75">
-                          {message.role === 'user' ? request.userName : 'AI Assistant'}
+                          {message.senderName}
                         </span>
                         <span className="text-xs opacity-60">
                           {new Date(message.timestamp).toLocaleTimeString()}

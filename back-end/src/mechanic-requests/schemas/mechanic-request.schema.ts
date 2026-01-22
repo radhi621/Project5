@@ -17,34 +17,42 @@ export class MechanicRequest {
   @Prop()
   userPhone: string;
 
-  @Prop({ type: [Object], required: true })
-  chatHistory: {
-    role: string;
-    content: string;
-    timestamp: Date;
-  }[];
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Mechanic', required: true })
+  mechanicId: MongooseSchema.Types.ObjectId;
+
+  @Prop({ required: true })
+  mechanicName: string;
+
+  @Prop({ required: true })
+  mechanicEmail: string;
 
   @Prop({
     type: String,
-    enum: ['pending', 'accepted', 'denied', 'cancelled'],
+    enum: ['pending', 'active', 'completed', 'reopen-requested', 'cancelled'],
     default: 'pending',
   })
   status: string;
 
-  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Mechanic' })
-  acceptedBy: MongooseSchema.Types.ObjectId;
+  @Prop({ type: [Object], default: [] })
+  messages: {
+    senderId: string;
+    senderName: string;
+    senderRole: 'user' | 'mechanic';
+    content: string;
+    timestamp: Date;
+  }[];
 
   @Prop()
-  acceptedByName: string;
+  acceptedAt: Date;
 
   @Prop()
-  acceptedByEmail: string;
+  completedAt: Date;
 
   @Prop()
-  responseMessage: string;
+  completedByMechanic: boolean;
 
   @Prop()
-  respondedAt: Date;
+  reopenRequestedAt: Date;
 }
 
 export const MechanicRequestSchema =

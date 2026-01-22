@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import AdminSidebar from '../components/AdminSidebar';
+import { authenticatedFetch } from '../../utils/api';
 
 interface RAGDocument {
   _id: string;
@@ -39,11 +40,7 @@ export default function RAGDataPage() {
   const loadDocuments = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:3001/api/rag-documents', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
-        },
-      });
+      const response = await authenticatedFetch('http://localhost:3001/api/rag-documents');
 
       if (response.ok) {
         const data = await response.json();
@@ -92,10 +89,11 @@ export default function RAGDataPage() {
       formData.append('title', title);
       formData.append('category', category);
 
+      const token = localStorage.getItem('accessToken');
       const response = await fetch('http://localhost:3001/api/rag-documents/upload', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+          'Authorization': `Bearer ${token}`,
         },
         body: formData,
       });

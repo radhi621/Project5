@@ -41,7 +41,11 @@ export class AuthService {
     );
 
     // Generate tokens
-    const tokens = await this.generateTokens((user as any)._id.toString(), user.email);
+    const tokens = await this.generateTokens(
+      (user as any)._id.toString(), 
+      user.email,
+      user.role
+    );
 
     return {
       user: {
@@ -74,7 +78,11 @@ export class AuthService {
     await this.usersService.updateLastActive((user as any)._id.toString());
 
     // Generate tokens
-    const tokens = await this.generateTokens((user as any)._id.toString(), user.email);
+    const tokens = await this.generateTokens(
+      (user as any)._id.toString(), 
+      user.email,
+      user.role
+    );
 
     return {
       user: {
@@ -92,8 +100,8 @@ export class AuthService {
     return this.usersService.findOne(userId);
   }
 
-  private async generateTokens(userId: string, email: string) {
-    const payload = { sub: userId, email };
+  private async generateTokens(userId: string, email: string, role: string) {
+    const payload = { sub: userId, email, role };
 
     const accessToken = await this.jwtService.signAsync(payload);
 
