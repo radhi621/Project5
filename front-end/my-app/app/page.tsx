@@ -314,7 +314,7 @@ export default function Home() {
               </button>
             )}
             <button 
-              onClick={() => setShowAppointmentModal(true)}
+              onClick={() => router.push('/mechanics')}
               className="flex items-center gap-2 px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
               title="Book Appointment"
             >
