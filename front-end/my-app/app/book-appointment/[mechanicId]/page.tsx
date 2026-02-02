@@ -193,7 +193,7 @@ export default function BookAppointmentPage() {
 
           {/* Mechanic Info */}
           <div className="mb-8 p-6 bg-gray-50 rounded-lg">
-            <h2 className="text-2xl font-semibold mb-2">{mechanic.name}</h2>
+            <h2 className="text-2xl font-semibold mb-2 text-black">{mechanic.name}</h2>
             <p className="text-gray-600 mb-2">⭐ {mechanic.rating.toFixed(1)} Rating</p>
             <p className="text-gray-600 mb-2">📍 {mechanic.location}</p>
             <p className="text-gray-600 mb-2">📞 {mechanic.phone}</p>
