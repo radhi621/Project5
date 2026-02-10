@@ -38,6 +38,14 @@ export class MechanicRequestsService {
     return request.save();
   }
 
+  // Get all chat history for admin
+  async findAllChats() {
+    return this.mechanicRequestModel
+      .find({})
+      .sort({ createdAt: -1 })
+      .exec();
+  }
+
   // Get pending requests for specific mechanic only
   async findAllPending(userEmail: string) {
     return this.mechanicRequestModel

@@ -45,20 +45,14 @@ export default function AdminDashboard() {
 
   const loadDashboardData = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const headers = {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      };
-
-      // Fetch all data in parallel
+      // Fetch all data in parallel using authenticatedFetch
       const [usersRes, mechanicsRes, docsRes, appointmentsRes, activityRes, healthRes] = await Promise.all([
-        fetch('http://localhost:3001/users/stats', { headers }),
-        fetch('http://localhost:3001/mechanics/stats', { headers }),
-        fetch('http://localhost:3001/rag-documents/stats', { headers }),
-        fetch('http://localhost:3001/appointments/stats', { headers }),
-        fetch('http://localhost:3001/activity/recent?limit=5', { headers }),
-        fetch('http://localhost:3001/health', { headers }),
+        authenticatedFetch('http://localhost:3001/api/users/stats'),
+        authenticatedFetch('http://localhost:3001/api/mechanics/stats'),
+        authenticatedFetch('http://localhost:3001/api/rag-documents/stats'),
+        authenticatedFetch('http://localhost:3001/api/appointments/stats'),
+        authenticatedFetch('http://localhost:3001/api/activity/recent?limit=5'),
+        authenticatedFetch('http://localhost:3001/api/health'),
       ]);
 
       const [users, mechanics, documents, appointments, activity, healthData] = await Promise.all([

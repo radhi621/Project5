@@ -603,6 +603,7 @@ export default function MechanicDashboard() {
 
 // Tab Components
 function PendingRequestsTab({ requests }: { requests: MechanicRequest[] }) {
+  const router = useRouter();
   if (requests.length === 0) {
     return (
       <div className="text-center py-8">
@@ -642,7 +643,10 @@ function PendingRequestsTab({ requests }: { requests: MechanicRequest[] }) {
             </div>
           )}
 
-          <button className="w-full px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 text-sm font-medium">
+           <button 
+            onClick={() => router.push(`/mechanic-chat/${request._id}`)}
+            className="w-full px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 text-sm font-medium"
+          >
             View Full Request & Respond
           </button>
         </div>

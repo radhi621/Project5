@@ -38,6 +38,13 @@ export class MechanicRequestsController {
     return request;
   }
 
+  // Get all chat history (for admin)
+  @Get('admin/all')
+  @Roles('admin')
+  findAllChats() {
+    return this.mechanicRequestsService.findAllChats();
+  }
+
   // Get all pending requests (for mechanics)
   @Get('pending')
   @Roles('mechanic', 'admin')
