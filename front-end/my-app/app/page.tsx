@@ -13,6 +13,8 @@ interface Message {
   role: 'user' | 'assistant';
   content: string;
   timestamp: string;
+  // Client-side only — not persisted in DB, used for image preview in the current session
+  imageUrls?: string[];
 }
 
 interface Chat {
@@ -119,6 +121,21 @@ export default function Home() {
   const handleSendMessage = async (content: string, files?: File[]) => {
     if (!content.trim() && (!files || files.length === 0)) return;
 
+    // Convert image files to data URLs before uploading so we can show previews
+    // in the current session (images are not persisted in the DB)
+    const imageUrls: string[] = await Promise.all(
+      (files || [])
+        .filter(f => f.type.startsWith('image/'))
+        .map(
+          f =>
+            new Promise<string>(resolve => {
+              const reader = new FileReader();
+              reader.onload = e => resolve(e.target!.result as string);
+              reader.readAsDataURL(f);
+            })
+        )
+    );
+
     try {
       setIsLoading(true);
       
@@ -191,6 +208,7 @@ export default function Home() {
                 role: 'user' as const,
                 content: userMessage.content,
                 timestamp: userMessage.createdAt,
+                imageUrls: imageUrls.length > 0 ? imageUrls : undefined,
               },
               {
                 id: aiMessage._id,
@@ -280,13 +298,23 @@ export default function Home() {
           <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
             <button 
               onClick={() => router.push('/requests')}
-              className="flex items-center gap-2 px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+              className="flex items-center gap-2 px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors"
               title="My Requests"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
               </svg>
               <span className="hidden md:inline">My Requests</span>
+            </button>
+            <button
+              onClick={() => router.push('/community')}
+              className="flex items-center gap-2 px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-white bg-teal-600 hover:bg-teal-700 rounded-lg transition-colors"
+              title="Community Forum"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+              </svg>
+              <span className="hidden md:inline">Community</span>
             </button>
             {user.role === 'admin' && (
               <button 
@@ -438,6 +466,7 @@ export default function Home() {
                   role={message.role}
                   content={message.content}
                   timestamp={message.timestamp}
+                  imageUrls={message.imageUrls}
                 />
               ))}
               {isLoading && (

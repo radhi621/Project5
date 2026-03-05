@@ -271,330 +271,269 @@ export default function MechanicDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Mechanic Dashboard</h1>
-              <p className="text-sm text-gray-500">Manage your profile and availability</p>
-            </div>
+    <div className="h-screen bg-gray-50 flex flex-col">
+      {/* ── Header ─────────────────────────────────────────────────────── */}
+      <header className="bg-white border-b border-gray-200 flex-shrink-0">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3 min-w-0">
             <button
               onClick={() => router.push('/')}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+              className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors flex-shrink-0"
+              title="Back to Home"
             >
-              Back to Chat
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Stats Cards */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-500">Rating</p>
-                <p className="text-2xl font-bold text-gray-900">{profile.rating.toFixed(1)}</p>
-              </div>
-              <span className="text-3xl text-yellow-400">★</span>
-            </div>
-            <p className="mt-2 text-xs text-gray-500">{profile.totalReviews} total reviews</p>
-          </div>
-
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-500">Completed Jobs</p>
-                <p className="text-2xl font-bold text-gray-900">{profile.completedJobs}</p>
-              </div>
-              <svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
+            </button>
+            <div className="min-w-0">
+              <h1 className="text-base sm:text-lg font-bold text-gray-900 leading-tight truncate">
+                {profile.shopName}
+              </h1>
+              <p className="text-xs text-gray-500 truncate">{profile.name} · Mechanic Dashboard</p>
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <div>
-              <p className="text-sm text-gray-500 mb-3">Availability</p>
-              <div className="flex gap-2">
-                {(['available', 'busy', 'offline'] as const).map((status) => (
-                  <button
-                    key={status}
-                    onClick={() => handleAvailabilityChange(status)}
-                    className={`flex-1 px-3 py-2 text-xs font-medium rounded-lg transition-colors ${
-                      profile.availability === status
-                        ? status === 'available'
-                          ? 'bg-green-100 text-green-800'
-                          : status === 'busy'
-                          ? 'bg-yellow-100 text-yellow-800'
-                          : 'bg-gray-200 text-gray-800'
-                        : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
-                    }`}
-                  >
-                    {status.charAt(0).toUpperCase() + status.slice(1)}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Tab Navigation */}
-        <div className="mt-6 bg-white rounded-lg shadow-sm">
-          <div className="border-b border-gray-200">
-            <nav className="flex -mb-px">
+          {/* Availability quick-toggle */}
+          <div className="flex items-center gap-1 flex-shrink-0">
+            {(['available', 'busy', 'offline'] as const).map(status => (
               <button
-                onClick={() => setActiveTab('pending')}
-                className={`py-4 px-6 text-sm font-medium border-b-2 transition-colors ${
-                  activeTab === 'pending'
-                    ? 'border-blue-600 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                key={status}
+                onClick={() => handleAvailabilityChange(status)}
+                className={`px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors capitalize ${
+                  profile.availability === status
+                    ? status === 'available' ? 'bg-green-100 text-green-700'
+                    : status === 'busy'      ? 'bg-yellow-100 text-yellow-700'
+                    :                          'bg-gray-200 text-gray-600'
+                    : 'text-gray-400 hover:bg-gray-100'
                 }`}
               >
-                Pending Requests
-                {pendingRequests.length > 0 && (
-                  <span className="ml-2 px-2 py-0.5 bg-orange-100 text-orange-800 rounded-full text-xs">
-                    {pendingRequests.length}
-                  </span>
+                {profile.availability === status && (
+                  <span className={`inline-block w-1.5 h-1.5 rounded-full mr-1.5 ${
+                    status === 'available' ? 'bg-green-500' : status === 'busy' ? 'bg-yellow-500' : 'bg-gray-400'
+                  }`} />
                 )}
+                {status}
               </button>
-              <button
-                onClick={() => setActiveTab('appointments')}
-                className={`py-4 px-6 text-sm font-medium border-b-2 transition-colors ${
-                  activeTab === 'appointments'
-                    ? 'border-blue-600 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                Appointments
-              </button>
-              <button
-                onClick={() => setActiveTab('history')}
-                className={`py-4 px-6 text-sm font-medium border-b-2 transition-colors ${
-                  activeTab === 'history'
-                    ? 'border-blue-600 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                Request History
-              </button>
-            </nav>
-          </div>
-
-          {/* Tab Content */}
-          <div className="p-6">
-            {activeTab === 'pending' && (
-              <PendingRequestsTab requests={pendingRequests} />
-            )}
-            {activeTab === 'appointments' && (
-              <AppointmentsTab mechanicId={profile._id} />
-            )}
-            {activeTab === 'history' && (
-              <RequestHistoryTab history={requestHistory} />
-            )}
+            ))}
           </div>
         </div>
+      </header>
 
-        {/* Profile Information */}
-        <div className="mt-6 bg-white rounded-lg shadow-sm">
-          <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-            <h2 className="text-lg font-semibold text-gray-900">Profile Information</h2>
-            {!editing ? (
-              <button
-                onClick={() => setEditing(true)}
-                className="px-4 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg"
-              >
-                Edit Profile
-              </button>
-            ) : (
-              <div className="flex gap-2">
-                <button
-                  onClick={() => {
-                    setEditing(false);
-                    setFormData({
-                      name: profile.name,
-                      phone: profile.phone,
-                      shopName: profile.shopName,
-                      specialties: profile.specialties,
-                      availability: profile.availability,
-                      address: profile.address || '',
-                      city: profile.city || '',
-                      state: profile.state || '',
-                      zipCode: profile.zipCode || '',
-                    });
-                  }}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleSave}
-                  disabled={saving}
-                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50"
-                >
-                  {saving ? 'Saving...' : 'Save Changes'}
-                </button>
+      {/* ── Scrollable body ────────────────────────────────────────────── */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+
+          {/* Stats row */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="bg-white rounded-xl border border-gray-200 px-4 py-3 flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-yellow-50 flex items-center justify-center flex-shrink-0">
+                <span className="text-yellow-400 text-lg leading-none">★</span>
               </div>
-            )}
+              <div>
+                <p className="text-xl font-bold text-gray-900 leading-tight">{profile.rating.toFixed(1)}</p>
+                <p className="text-xs text-gray-500">{profile.totalReviews} reviews</p>
+              </div>
+            </div>
+            <div className="bg-white rounded-xl border border-gray-200 px-4 py-3 flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-green-50 flex items-center justify-center flex-shrink-0">
+                <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-xl font-bold text-gray-900 leading-tight">{profile.completedJobs}</p>
+                <p className="text-xs text-gray-500">Jobs done</p>
+              </div>
+            </div>
+            <div className="bg-white rounded-xl border border-gray-200 px-4 py-3 flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-orange-50 flex items-center justify-center flex-shrink-0">
+                <svg className="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-xl font-bold text-gray-900 leading-tight">{pendingRequests.length}</p>
+                <p className="text-xs text-gray-500">Pending</p>
+              </div>
+            </div>
+            <div className={`rounded-xl border px-4 py-3 flex items-center gap-3 ${
+              profile.availability === 'available' ? 'bg-green-50 border-green-200'
+              : profile.availability === 'busy'    ? 'bg-yellow-50 border-yellow-200'
+              :                                       'bg-gray-100 border-gray-200'
+            }`}>
+              <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${
+                profile.availability === 'available' ? 'bg-green-500' : profile.availability === 'busy' ? 'bg-yellow-500' : 'bg-gray-400'
+              }`} />
+              <div>
+                <p className={`text-sm font-semibold capitalize ${
+                  profile.availability === 'available' ? 'text-green-700' : profile.availability === 'busy' ? 'text-yellow-700' : 'text-gray-600'
+                }`}>{profile.availability}</p>
+                <p className="text-xs text-gray-500">Status</p>
+              </div>
+            </div>
           </div>
 
-          <div className="p-6">
-            {!editing ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-                  <p className="text-gray-900">{profile.name}</p>
+          {/* Tab card */}
+          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+            {/* Tab nav */}
+            <div className="flex border-b border-gray-200">
+              {(['pending', 'appointments', 'history'] as const).map(tab => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`flex-1 py-3 px-4 text-sm font-medium transition-colors ${
+                    activeTab === tab
+                      ? 'border-b-2 border-blue-600 text-blue-600'
+                      : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  {tab === 'pending' ? 'Pending Requests' : tab === 'appointments' ? 'Appointments' : 'Request History'}
+                  {tab === 'pending' && pendingRequests.length > 0 && (
+                    <span className="ml-1.5 px-1.5 py-0.5 bg-orange-100 text-orange-700 rounded-full text-xs font-semibold">
+                      {pendingRequests.length}
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
+
+            <div className="p-5 max-h-[420px] overflow-y-auto">
+              {activeTab === 'pending' && <PendingRequestsTab requests={pendingRequests} />}
+              {activeTab === 'appointments' && <AppointmentsTab mechanicId={profile._id} />}
+              {activeTab === 'history' && <RequestHistoryTab history={requestHistory} />}
+            </div>
+          </div>
+
+          {/* Profile card */}
+          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+            <div className="px-5 py-4 border-b border-gray-200 flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-gray-900">Profile Information</h2>
+              {!editing ? (
+                <button
+                  onClick={() => setEditing(true)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                  Edit
+                </button>
+              ) : (
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => {
+                      setEditing(false);
+                      setFormData({
+                        name: profile.name, phone: profile.phone, shopName: profile.shopName,
+                        specialties: profile.specialties, availability: profile.availability,
+                        address: profile.address || '', city: profile.city || '',
+                        state: profile.state || '', zipCode: profile.zipCode || '',
+                      });
+                    }}
+                    className="px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-100 rounded-lg border border-gray-200 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleSave}
+                    disabled={saving}
+                    className="px-3 py-1.5 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg disabled:opacity-50 transition-colors"
+                  >
+                    {saving ? 'Saving…' : 'Save'}
+                  </button>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                  <p className="text-gray-900">{profile.email}</p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
-                  <p className="text-gray-900">{profile.phone}</p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Shop Name</label>
-                  <p className="text-gray-900">{profile.shopName}</p>
-                </div>
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Specialties</label>
-                  <div className="flex flex-wrap gap-2">
-                    {profile.specialties.map((specialty, idx) => (
-                      <span
-                        key={idx}
-                        className="px-3 py-1 bg-blue-100 text-blue-700 rounded-lg text-sm"
-                      >
-                        {specialty}
-                      </span>
-                    ))}
+              )}
+            </div>
+
+            <div className="p-5">
+              {!editing ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {[
+                    { label: 'Name',      value: profile.name },
+                    { label: 'Email',     value: profile.email },
+                    { label: 'Phone',     value: profile.phone },
+                    { label: 'Shop',      value: profile.shopName },
+                    { label: 'Address',   value: profile.address || '—' },
+                    { label: 'City',      value: profile.city    || '—' },
+                    { label: 'State',     value: profile.state   || '—' },
+                    { label: 'Zip Code',  value: profile.zipCode || '—' },
+                  ].map(({ label, value }) => (
+                    <div key={label}>
+                      <p className="text-xs font-medium text-gray-500 mb-0.5">{label}</p>
+                      <p className="text-sm text-gray-900">{value}</p>
+                    </div>
+                  ))}
+                  <div className="sm:col-span-2">
+                    <p className="text-xs font-medium text-gray-500 mb-1.5">Specialties</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {profile.specialties.map((s, i) => (
+                        <span key={i} className="px-2.5 py-1 bg-blue-50 text-blue-700 border border-blue-100 rounded-full text-xs font-medium">{s}</span>
+                      ))}
+                    </div>
                   </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
-                  <p className="text-gray-900">{profile.address || 'Not provided'}</p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
-                  <p className="text-gray-900">{profile.city || 'Not provided'}</p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">State</label>
-                  <p className="text-gray-900">{profile.state || 'Not provided'}</p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Zip Code</label>
-                  <p className="text-gray-900">{profile.zipCode || 'Not provided'}</p>
-                </div>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Name</label>
-                  <input
-                    type="text"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Phone</label>
-                  <input
-                    type="text"
-                    value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Shop Name</label>
-                  <input
-                    type="text"
-                    value={formData.shopName}
-                    onChange={(e) => setFormData({ ...formData, shopName: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Specialties</label>
-                  <div className="flex gap-2 mb-2">
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {[
+                    { label: 'Name',     key: 'name'     as const },
+                    { label: 'Phone',    key: 'phone'    as const },
+                    { label: 'Address',  key: 'address'  as const },
+                    { label: 'City',     key: 'city'     as const },
+                    { label: 'State',    key: 'state'    as const },
+                    { label: 'Zip Code', key: 'zipCode'  as const },
+                  ].map(({ label, key }) => (
+                    <div key={key}>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">{label}</label>
+                      <input
+                        type="text"
+                        value={formData[key]}
+                        onChange={e => setFormData({ ...formData, [key]: e.target.value })}
+                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+                  ))}
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Shop Name</label>
                     <input
                       type="text"
-                      value={specialtyInput}
-                      onChange={(e) => setSpecialtyInput(e.target.value)}
-                      onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addSpecialty())}
-                      placeholder="Add specialty (e.g., Engine, Brakes)"
-                      className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      value={formData.shopName}
+                      onChange={e => setFormData({ ...formData, shopName: e.target.value })}
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
-                    <button
-                      type="button"
-                      onClick={addSpecialty}
-                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                    >
-                      Add
-                    </button>
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                    {formData.specialties.map((specialty, idx) => (
-                      <span
-                        key={idx}
-                        className="px-3 py-1 bg-blue-100 text-blue-700 rounded-lg text-sm flex items-center gap-2"
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs font-medium text-gray-700 mb-1.5">Specialties</label>
+                    <div className="flex gap-2 mb-2">
+                      <input
+                        type="text"
+                        value={specialtyInput}
+                        onChange={e => setSpecialtyInput(e.target.value)}
+                        onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addSpecialty())}
+                        placeholder="e.g. Engine, Brakes…"
+                        className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                      <button
+                        type="button"
+                        onClick={addSpecialty}
+                        className="px-3 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
                       >
-                        {specialty}
-                        <button
-                          type="button"
-                          onClick={() => removeSpecialty(specialty)}
-                          className="text-blue-900 hover:text-blue-700"
-                        >
-                          ×
-                        </button>
-                      </span>
-                    ))}
+                        Add
+                      </button>
+                    </div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {formData.specialties.map((s, i) => (
+                        <span key={i} className="flex items-center gap-1 px-2.5 py-1 bg-blue-50 text-blue-700 border border-blue-100 rounded-full text-xs font-medium">
+                          {s}
+                          <button type="button" onClick={() => removeSpecialty(s)} className="text-blue-500 hover:text-blue-800 leading-none">×</button>
+                        </span>
+                      ))}
+                    </div>
                   </div>
                 </div>
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Address</label>
-                  <input
-                    type="text"
-                    value={formData.address}
-                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">City</label>
-                  <input
-                    type="text"
-                    value={formData.city}
-                    onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">State</label>
-                  <input
-                    type="text"
-                    value={formData.state}
-                    onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Zip Code</label>
-                  <input
-                    type="text"
-                    value={formData.zipCode}
-                    onChange={(e) => setFormData({ ...formData, zipCode: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
+
         </div>
       </div>
     </div>
@@ -606,48 +545,52 @@ function PendingRequestsTab({ requests }: { requests: MechanicRequest[] }) {
   const router = useRouter();
   if (requests.length === 0) {
     return (
-      <div className="text-center py-8">
+      <div className="text-center py-10">
         <div className="inline-flex items-center justify-center w-12 h-12 bg-gray-100 rounded-full mb-3">
           <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
           </svg>
         </div>
-        <p className="text-gray-500">No pending requests</p>
-        <p className="text-sm text-gray-400 mt-1">New requests will appear here</p>
+        <p className="text-sm font-medium text-gray-600">No pending requests</p>
+        <p className="text-xs text-gray-400 mt-1">New requests will appear here</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {requests.map((request) => (
-        <div key={request._id} className="border border-gray-200 rounded-lg p-4">
+        <div key={request._id} className="border border-gray-200 rounded-xl p-4 hover:border-blue-200 hover:shadow-sm transition-all">
           <div className="flex items-start justify-between mb-3">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold">
-                {request.userName.charAt(0).toUpperCase()}
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                {(request.userName ?? '?').charAt(0).toUpperCase()}
               </div>
               <div>
-                <h3 className="font-semibold text-gray-900">{request.userName}</h3>
-                <p className="text-sm text-gray-500">{new Date(request.createdAt).toLocaleString()}</p>
+                <h3 className="text-sm font-semibold text-gray-900">{request.userName ?? 'Unknown'}</h3>
+                <p className="text-xs text-gray-500">{new Date(request.createdAt).toLocaleString()}</p>
               </div>
             </div>
-            <span className="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-sm font-medium">
+            <span className="flex items-center gap-1 px-2.5 py-1 bg-orange-50 text-orange-700 border border-orange-100 rounded-full text-xs font-medium">
+              <span className="w-1.5 h-1.5 rounded-full bg-orange-400" />
               Pending
             </span>
           </div>
 
           {request.messages.length > 0 && (
-            <div className="mb-3 p-3 bg-gray-50 rounded-lg">
-              <p className="text-sm text-gray-700">{request.messages[0].content}</p>
-            </div>
+            <p className="text-sm text-gray-600 mb-3 line-clamp-2 bg-gray-50 rounded-lg px-3 py-2">
+              {request.messages[0].content}
+            </p>
           )}
 
-           <button 
+          <button
             onClick={() => router.push(`/mechanic-chat/${request._id}`)}
-            className="w-full px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 text-sm font-medium"
+            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
           >
-            View Full Request & Respond
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            </svg>
+            View & Respond
           </button>
         </div>
       ))}
@@ -656,45 +599,47 @@ function PendingRequestsTab({ requests }: { requests: MechanicRequest[] }) {
 }
 
 function RequestHistoryTab({ history }: { history: MechanicRequest[] }) {
+  const STATUS_CFG: Record<string, { label: string; dot: string; badge: string }> = {
+    completed:  { label: 'Completed',  dot: 'bg-green-500',  badge: 'bg-green-50 text-green-700 border-green-100' },
+    active:     { label: 'Active',     dot: 'bg-blue-500',   badge: 'bg-blue-50 text-blue-700 border-blue-100' },
+    cancelled:  { label: 'Cancelled',  dot: 'bg-red-400',    badge: 'bg-red-50 text-red-600 border-red-100' },
+    'reopen-requested': { label: 'Reopen', dot: 'bg-yellow-400', badge: 'bg-yellow-50 text-yellow-700 border-yellow-100' },
+  };
+
   if (history.length === 0) {
     return (
-      <div className="text-center py-8">
+      <div className="text-center py-10">
         <div className="inline-flex items-center justify-center w-12 h-12 bg-gray-100 rounded-full mb-3">
           <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
           </svg>
         </div>
-        <p className="text-gray-500">No request history yet</p>
-        <p className="text-sm text-gray-400 mt-1">Accepted and declined requests will appear here</p>
+        <p className="text-sm font-medium text-gray-600">No request history yet</p>
+        <p className="text-xs text-gray-400 mt-1">Completed and declined requests will appear here</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-4">
-      {history.map((request) => (
-        <div key={request._id} className="border border-gray-200 rounded-lg p-4">
-          <div className="flex items-start justify-between mb-3">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gray-500 to-gray-600 flex items-center justify-center text-white font-bold">
-                {request.userName.charAt(0).toUpperCase()}
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900">{request.userName}</h3>
-                <p className="text-sm text-gray-500">{new Date(request.createdAt).toLocaleString()}</p>
-              </div>
+    <div className="space-y-3">
+      {history.map((request) => {
+        const cfg = STATUS_CFG[request.status] ?? { label: request.status, dot: 'bg-gray-400', badge: 'bg-gray-50 text-gray-600 border-gray-100' };
+        return (
+          <div key={request._id} className="border border-gray-200 rounded-xl p-4 flex items-center gap-3">
+            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-gray-400 to-gray-600 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+              {(request.userName ?? '?').charAt(0).toUpperCase()}
             </div>
-            <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-              request.status === 'completed' ? 'bg-green-100 text-green-800' :
-              request.status === 'active' ? 'bg-blue-100 text-blue-800' :
-              request.status === 'cancelled' ? 'bg-red-100 text-red-800' :
-              'bg-gray-100 text-gray-800'
-            }`}>
-              {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-gray-900 truncate">{request.userName ?? 'Unknown'}</p>
+              <p className="text-xs text-gray-500">{new Date(request.createdAt).toLocaleDateString()}</p>
+            </div>
+            <span className={`flex items-center gap-1 px-2.5 py-1 border rounded-full text-xs font-medium flex-shrink-0 ${cfg.badge}`}>
+              <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
+              {cfg.label}
             </span>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
@@ -797,18 +742,18 @@ function AppointmentsTab({ mechanicId }: { mechanicId: string }) {
   return (
     <div>
       {/* Filter */}
-      <div className="flex gap-2 mb-6">
+      <div className="flex gap-1.5 mb-5 flex-wrap">
         {['all', 'pending', 'confirmed', 'completed'].map((status) => (
           <button
             key={status}
             onClick={() => setFilter(status as any)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors capitalize ${
               filter === status
                 ? 'bg-blue-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
             }`}
           >
-            {status.charAt(0).toUpperCase() + status.slice(1)}
+            {status}
           </button>
         ))}
       </div>
@@ -824,70 +769,68 @@ function AppointmentsTab({ mechanicId }: { mechanicId: string }) {
           <p className="text-gray-500">No appointments found</p>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-3">
           {appointments.map((apt) => (
-            <div key={apt._id} className="border border-gray-200 rounded-lg p-4">
-              <div className="flex justify-between items-start mb-4">
+            <div key={apt._id} className="border border-gray-200 rounded-xl p-4 hover:border-blue-200 hover:shadow-sm transition-all">
+              <div className="flex items-start justify-between mb-3">
                 <div>
-                  <h3 className="font-semibold text-gray-900">{apt.userName}</h3>
-                  <p className="text-sm text-gray-600">{apt.serviceType}</p>
+                  <h3 className="text-sm font-semibold text-gray-900">{apt.userName}</h3>
+                  <p className="text-xs text-gray-500">{apt.serviceType}</p>
                 </div>
-                <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                  apt.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                  apt.status === 'confirmed' ? 'bg-green-100 text-green-800' :
-                  apt.status === 'completed' ? 'bg-blue-100 text-blue-800' :
-                  apt.status === 'declined' ? 'bg-red-100 text-red-800' :
-                  'bg-gray-100 text-gray-800'
+                <span className={`flex items-center gap-1 px-2.5 py-1 border rounded-full text-xs font-medium ${
+                  apt.status === 'pending'   ? 'bg-yellow-50 text-yellow-700 border-yellow-100' :
+                  apt.status === 'confirmed' ? 'bg-green-50 text-green-700 border-green-100' :
+                  apt.status === 'completed' ? 'bg-blue-50 text-blue-700 border-blue-100' :
+                  apt.status === 'declined'  ? 'bg-red-50 text-red-600 border-red-100' :
+                  'bg-gray-50 text-gray-600 border-gray-100'
                 }`}>
+                  <span className={`w-1.5 h-1.5 rounded-full ${
+                    apt.status === 'pending' ? 'bg-yellow-400' : apt.status === 'confirmed' ? 'bg-green-500' :
+                    apt.status === 'completed' ? 'bg-blue-500' : 'bg-red-400'
+                  }`} />
                   {apt.status.charAt(0).toUpperCase() + apt.status.slice(1)}
                 </span>
               </div>
 
-              <div className="grid grid-cols-2 gap-4 mb-4 text-sm">
-                <div>
-                  <span className="text-gray-500">Date:</span>
-                  <span className="ml-2 font-medium">{new Date(apt.date).toLocaleDateString()}</span>
-                </div>
-                <div>
-                  <span className="text-gray-500">Time:</span>
-                  <span className="ml-2 font-medium">{apt.timeSlot}</span>
-                </div>
-                <div>
-                  <span className="text-gray-500">Duration:</span>
-                  <span className="ml-2 font-medium">{apt.estimatedDuration} min</span>
-                </div>
-                <div>
-                  <span className="text-gray-500">Booked:</span>
-                  <span className="ml-2 font-medium">{new Date(apt.createdAt).toLocaleDateString()}</span>
-                </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
+                {[
+                  { label: 'Date',     value: new Date(apt.date).toLocaleDateString() },
+                  { label: 'Time',     value: apt.timeSlot },
+                  { label: 'Duration', value: `${apt.estimatedDuration} min` },
+                  { label: 'Booked',   value: new Date(apt.createdAt).toLocaleDateString() },
+                ].map(({ label, value }) => (
+                  <div key={label} className="bg-gray-50 rounded-lg px-3 py-2">
+                    <p className="text-xs text-gray-500">{label}</p>
+                    <p className="text-xs font-semibold text-gray-800 mt-0.5">{value}</p>
+                  </div>
+                ))}
               </div>
 
               {apt.notes && (
-                <div className="mb-4 p-3 bg-gray-50 rounded-lg">
-                  <p className="text-sm text-gray-600 font-medium">Notes:</p>
-                  <p className="text-sm text-gray-700">{apt.notes}</p>
+                <div className="mb-3 px-3 py-2 bg-gray-50 rounded-lg">
+                  <p className="text-xs font-medium text-gray-500 mb-0.5">Notes</p>
+                  <p className="text-xs text-gray-700">{apt.notes}</p>
                 </div>
               )}
 
               {apt.cancellationReason && (
-                <div className="mb-4 p-3 bg-red-50 rounded-lg">
-                  <p className="text-sm text-red-600 font-medium">Decline Reason:</p>
-                  <p className="text-sm text-red-700">{apt.cancellationReason}</p>
+                <div className="mb-3 px-3 py-2 bg-red-50 rounded-lg">
+                  <p className="text-xs font-medium text-red-500 mb-0.5">Decline Reason</p>
+                  <p className="text-xs text-red-700">{apt.cancellationReason}</p>
                 </div>
               )}
 
-              {/* Actions */}
               {apt.status === 'pending' && (
                 <div className="flex gap-2">
                   <button
                     onClick={() => handleConfirm(apt._id)}
-                    className="flex-1 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 text-sm font-medium"
+                    className="flex-1 bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg text-xs font-medium transition-colors"
                   >
                     Confirm
                   </button>
                   <button
                     onClick={() => handleDecline(apt._id)}
-                    className="flex-1 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 text-sm font-medium"
+                    className="flex-1 bg-white hover:bg-red-50 text-red-600 border border-red-200 px-3 py-2 rounded-lg text-xs font-medium transition-colors"
                   >
                     Decline
                   </button>
@@ -897,7 +840,7 @@ function AppointmentsTab({ mechanicId }: { mechanicId: string }) {
               {apt.status === 'confirmed' && (
                 <button
                   onClick={() => handleComplete(apt._id)}
-                  className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm font-medium"
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-xs font-medium transition-colors"
                 >
                   Mark as Completed
                 </button>

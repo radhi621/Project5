@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Appointment, AppointmentDocument } from './schemas/appointment.schema';
@@ -14,8 +14,19 @@ export class AppointmentsService {
     private mechanicsService: MechanicsService,
   ) {}
 
-  async create(createAppointmentDto: CreateAppointmentDto): Promise<Appointment> {
-    const appointment = new this.appointmentModel(createAppointmentDto);
+  async create(createAppointmentDto: CreateAppointmentDto, requestingUser: { userId: string; role: string; user?: any }): Promise<Appointment> {
+    // Always source userId/userName from the authenticated token for regular users.
+    // Admins may supply an explicit userId/userName in the body (e.g. booking on behalf of a user).
+    const userId =
+      requestingUser.role === 'admin' && createAppointmentDto.userId
+        ? createAppointmentDto.userId
+        : requestingUser.userId;
+    const userName =
+      requestingUser.role === 'admin' && createAppointmentDto.userName
+        ? createAppointmentDto.userName
+        : requestingUser.user?.name || createAppointmentDto.userName;
+
+    const appointment = new this.appointmentModel({ ...createAppointmentDto, userId, userName });
     const saved = await appointment.save();
     
     // Log activity
@@ -168,7 +179,14 @@ export class AppointmentsService {
     return updated;
   }
 
-  async cancelAppointment(id: string, reason?: string): Promise<Appointment> {
+  async cancelAppointment(id: string, reason?: string, requestingUser?: { userId: string; role: string }): Promise<Appointment> {
+    if (requestingUser && requestingUser.role !== 'admin') {
+      const existing = await this.findOne(id);
+      if (existing.userId.toString() !== requestingUser.userId) {
+        throw new ForbiddenException('You can only cancel your own appointments');
+      }
+    }
+
     const updated = await this.appointmentModel
       .findByIdAndUpdate(
         id,

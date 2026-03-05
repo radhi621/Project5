@@ -1,13 +1,15 @@
 import { IsNotEmpty, IsString, IsDateString, IsOptional, IsMongoId, IsNumber } from 'class-validator';
 
 export class CreateAppointmentDto {
-  @IsNotEmpty()
+  // userId and userName are ignored for regular users — they are always sourced from the JWT token.
+  // An admin may optionally supply them to book on behalf of another user.
+  @IsOptional()
   @IsMongoId()
-  userId: string;
+  userId?: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
-  userName: string;
+  userName?: string;
 
   @IsNotEmpty()
   @IsMongoId()

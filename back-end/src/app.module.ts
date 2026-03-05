@@ -15,6 +15,7 @@ import { HealthModule } from './health/health.module';
 import { MechanicRequestsModule } from './mechanic-requests/mechanic-requests.module';
 import { ChatGatewayModule } from './chat-gateway/chat-gateway.module';
 import { ReviewsModule } from './reviews/reviews.module';
+import { CommunityModule } from './community/community.module';
 
 @Module({
   imports: [
@@ -46,6 +47,7 @@ import { ReviewsModule } from './reviews/reviews.module';
     MechanicRequestsModule,
     ChatGatewayModule,
     ReviewsModule,
+    CommunityModule,
   ],
   controllers: [AppController],
   providers: [AppService],
