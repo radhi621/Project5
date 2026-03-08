@@ -52,6 +52,9 @@ export default function PostDetailPage() {
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({ title: '', content: '', tags: '' });
   const [savingEdit, setSavingEdit] = useState(false);
+  const [replyingTo, setReplyingTo] = useState<Comment | null>(null);
+  const [replyText, setReplyText] = useState('');
+  const [submittingReply, setSubmittingReply] = useState(false);
   const commentInputRef = useRef<HTMLTextAreaElement>(null);
 
   const loadPost = useCallback(async () => {
@@ -186,6 +189,108 @@ export default function PostDetailPage() {
       minute: '2-digit',
     });
 
+  const handleSubmitReply = async (e: React.FormEvent, parentComment: Comment) => {
+    e.preventDefault();
+    if (!user) { router.push('/login'); return; }
+    if (!replyText.trim()) return;
+    try {
+      setSubmittingReply(true);
+      const res = await authenticatedFetch('http://localhost:3001/api/community/comments', {
+        method: 'POST',
+        body: JSON.stringify({ postId, content: replyText.trim(), quotedCommentId: parentComment._id }),
+      });
+      if (res.ok) {
+        const newComment = await res.json();
+        setComments(prev => [...prev, newComment]);
+        setPost(prev => prev ? { ...prev, commentCount: prev.commentCount + 1 } : prev);
+        setReplyText('');
+        setReplyingTo(null);
+      }
+    } finally {
+      setSubmittingReply(false);
+    }
+  };
+
+  const renderCommentCard = (comment: Comment, isReply: boolean) => {
+    const netVotes = comment.upvotes.length - comment.downvotes.length;
+    const userUpvoted = user && comment.upvotes.includes(user.id);
+    const userDownvoted = user && comment.downvotes.includes(user.id);
+    const canDelete = user && (user.id === comment.authorId || user.role === 'admin');
+    return (
+      <div className={`bg-white rounded-xl border border-gray-200 shadow-sm p-4${isReply ? ' border-l-4 border-l-indigo-200' : ''}`}>
+        {comment.quotedComment && (
+          <div className="mb-3 pl-3 border-l-2 border-blue-300 bg-blue-50 rounded-r-lg py-2 pr-3">
+            <p className="text-xs font-semibold text-blue-700 mb-0.5">
+              Quoting {comment.quotedComment.authorName}:
+            </p>
+            <p className="text-xs text-blue-600 italic line-clamp-2">
+              {comment.quotedComment.content}
+            </p>
+          </div>
+        )}
+        <div className="flex gap-3">
+          <div className="flex flex-col items-center gap-1 flex-shrink-0">
+            <button
+              onClick={() => handleVoteComment(comment._id, 'upvote')}
+              className={`p-1 rounded transition-colors ${userUpvoted ? 'text-blue-600' : 'text-gray-300 hover:text-blue-600'}`}
+              title="Upvote"
+            >
+              <svg className="w-4 h-4" fill={userUpvoted ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+              </svg>
+            </button>
+            <span className={`text-xs font-bold ${netVotes > 0 ? 'text-blue-600' : netVotes < 0 ? 'text-red-500' : 'text-gray-400'}`}>
+              {netVotes}
+            </span>
+            <button
+              onClick={() => handleVoteComment(comment._id, 'downvote')}
+              className={`p-1 rounded transition-colors ${userDownvoted ? 'text-red-500' : 'text-gray-300 hover:text-red-500'}`}
+              title="Downvote"
+            >
+              <svg className="w-4 h-4" fill={userDownvoted ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center justify-between gap-2 mb-2">
+              <div className="flex items-center gap-2 text-xs text-gray-500">
+                <span className="font-semibold text-gray-700">{comment.authorName}</span>
+                <span>·</span>
+                <span>{formatDate(comment.createdAt)}</span>
+              </div>
+              <div className="flex items-center gap-1">
+                {user && (
+                  <button
+                    onClick={() => setReplyingTo(comment)}
+                    className="p-1.5 text-xs text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                    title="Reply"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                    </svg>
+                  </button>
+                )}
+                {canDelete && (
+                  <button
+                    onClick={() => handleDeleteComment(comment._id)}
+                    className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    title="Delete comment"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
+                )}
+              </div>
+            </div>
+            <p className="text-sm text-gray-800 leading-relaxed whitespace-pre-wrap">{comment.content}</p>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -206,6 +311,8 @@ export default function PostDetailPage() {
   const userUpvotedPost = user && post.upvotes.includes(user.id);
   const userDownvotedPost = user && post.downvotes.includes(user.id);
   const canEditPost = user && (user.id === post.authorId || user.role === 'admin');
+  const topLevelComments = comments;
+  const repliesMap: Record<string, Comment[]> = {};
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -389,105 +496,95 @@ export default function PostDetailPage() {
 
           {comments.length > 0 && (
             <div className="space-y-3 mb-6">
-              {comments.map(comment => {
-                const commentNetVotes = comment.upvotes.length - comment.downvotes.length;
-                const userUpvotedComment = user && comment.upvotes.includes(user.id);
-                const userDownvotedComment = user && comment.downvotes.includes(user.id);
-                const canDelete =
-                  user && (user.id === comment.authorId || user.role === 'admin');
-
+              {topLevelComments.map(comment => {
+                const replies = repliesMap[comment._id] ?? [];
                 return (
-                  <div key={comment._id} className="bg-white rounded-xl border border-gray-200">
-                    <div className="flex">
-                      {/* Vote sidebar */}
-                      <div className="flex flex-col items-center gap-0.5 px-3 py-4 bg-gray-50 border-r border-gray-100 rounded-l-xl flex-shrink-0">
-                        <button
-                          onClick={() => handleVoteComment(comment._id, 'upvote')}
-                          className={`p-1 rounded transition-colors ${
-                            userUpvotedComment
-                              ? 'text-blue-600'
-                              : 'text-gray-300 hover:text-blue-600'
-                          }`}
-                        >
-                          <svg className="w-4 h-4" fill={userUpvotedComment ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                          </svg>
-                        </button>
-                        <span
-                          className={`text-xs font-bold leading-none ${
-                            commentNetVotes > 0
-                              ? 'text-blue-600'
-                              : commentNetVotes < 0
-                              ? 'text-red-500'
-                              : 'text-gray-400'
-                          }`}
-                        >
-                          {commentNetVotes}
-                        </span>
-                        <button
-                          onClick={() => handleVoteComment(comment._id, 'downvote')}
-                          className={`p-1 rounded transition-colors ${
-                            userDownvotedComment
-                              ? 'text-red-500'
-                              : 'text-gray-300 hover:text-red-500'
-                          }`}
-                        >
-                          <svg className="w-4 h-4" fill={userDownvotedComment ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                          </svg>
-                        </button>
-                      </div>
+                  <div key={comment._id} className="space-y-2">
+                    {renderCommentCard(comment, false)}
 
-                      {/* Comment body */}
-                      <div className="flex-1 px-4 py-4 min-w-0">
-                        {/* Quoted comment */}
-                        {comment.quotedComment && (
-                          <div className="mb-3 pl-3 border-l-2 border-blue-300 bg-blue-50 rounded-r-lg py-2 pr-3">
-                            <p className="text-xs font-semibold text-blue-700 mb-0.5">
-                              {comment.quotedComment.authorName} wrote:
-                            </p>
-                            <p className="text-xs text-blue-600 line-clamp-2 italic">
-                              {comment.quotedComment.content}
-                            </p>
-                          </div>
-                        )}
-
-                        <p className="text-sm text-gray-800 leading-relaxed mb-3 whitespace-pre-wrap">
-                          {comment.content}
-                        </p>
-
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-1.5 text-xs text-gray-500">
-                            <span className="font-medium text-gray-700">{comment.authorName}</span>
-                            <span>·</span>
-                            <span>{formatDate(comment.createdAt)}</span>
-                          </div>
-                          <div className="flex items-center gap-1">
+                    {/* Inline reply form for this comment */}
+                    {replyingTo?._id === comment._id && (
+                      <div className="ml-8">
+                        <form
+                          onSubmit={e => handleSubmitReply(e, comment)}
+                          className="bg-indigo-50 border border-indigo-200 rounded-xl p-4"
+                        >
+                          <p className="text-xs font-semibold text-indigo-600 mb-2">
+                            Replying to {comment.authorName}
+                          </p>
+                          <textarea
+                            autoFocus
+                            value={replyText}
+                            onChange={e => setReplyText(e.target.value)}
+                            placeholder="Write your reply..."
+                            rows={2}
+                            className="w-full px-3 py-2 border border-indigo-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-y bg-white mb-2"
+                          />
+                          <div className="flex justify-end gap-2">
                             <button
-                              onClick={() => handleQuote(comment)}
-                              className="flex items-center gap-1 px-2 py-1 text-xs text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
-                              title="Quote this comment"
+                              type="button"
+                              onClick={() => setReplyingTo(null)}
+                              className="px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
                             >
-                              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
-                              </svg>
-                              Quote
+                              Cancel
                             </button>
-                            {canDelete && (
-                              <button
-                                onClick={() => handleDeleteComment(comment._id)}
-                                className="p-1.5 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors"
-                                title="Delete comment"
+                            <button
+                              type="submit"
+                              disabled={submittingReply || !replyText.trim()}
+                              className="px-3 py-1.5 text-xs font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg disabled:opacity-50 transition-colors"
+                            >
+                              {submittingReply ? 'Posting...' : 'Post Reply'}
+                            </button>
+                          </div>
+                        </form>
+                      </div>
+                    )}
+
+                    {/* Nested replies */}
+                    {replies.length > 0 && (
+                      <div className="ml-8 space-y-2">
+                        {replies.map(reply => (
+                          <div key={reply._id} className="space-y-2">
+                            {renderCommentCard(reply, true)}
+                            {/* Inline reply form for a reply */}
+                            {replyingTo?._id === reply._id && (
+                              <form
+                                onSubmit={e => handleSubmitReply(e, reply)}
+                                className="bg-indigo-50 border border-indigo-200 rounded-xl p-4"
                               >
-                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                </svg>
-                              </button>
+                                <p className="text-xs font-semibold text-indigo-600 mb-2">
+                                  Replying to {reply.authorName}
+                                </p>
+                                <textarea
+                                  autoFocus
+                                  value={replyText}
+                                  onChange={e => setReplyText(e.target.value)}
+                                  placeholder="Write your reply..."
+                                  rows={2}
+                                  className="w-full px-3 py-2 border border-indigo-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-y bg-white mb-2"
+                                />
+                                <div className="flex justify-end gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={() => setReplyingTo(null)}
+                                    className="px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                                  >
+                                    Cancel
+                                  </button>
+                                  <button
+                                    type="submit"
+                                    disabled={submittingReply || !replyText.trim()}
+                                    className="px-3 py-1.5 text-xs font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg disabled:opacity-50 transition-colors"
+                                  >
+                                    {submittingReply ? 'Posting...' : 'Post Reply'}
+                                  </button>
+                                </div>
+                              </form>
                             )}
                           </div>
-                        </div>
+                        ))}
                       </div>
-                    </div>
+                    )}
                   </div>
                 );
               })}

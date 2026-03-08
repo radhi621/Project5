@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, KeyboardEvent } from 'react';
+import React, { useState, useRef, useEffect, KeyboardEvent } from 'react';
 
 interface ChatInputProps {
   onSendMessage: (message: string, files?: File[]) => void;
@@ -10,8 +10,66 @@ interface ChatInputProps {
 export default function ChatInput({ onSendMessage, disabled = false }: ChatInputProps) {
   const [message, setMessage] = useState('');
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [isListening, setIsListening] = useState(false);
+  const [speechSupported, setSpeechSupported] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const recognitionRef = useRef<any>(null);
+  const baseTextRef = useRef('');
+
+  useEffect(() => {
+    setSpeechSupported('SpeechRecognition' in window || 'webkitSpeechRecognition' in window);
+  }, []);
+
+  // Keep textarea height in sync when voice input updates the message
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 200) + 'px';
+    }
+  }, [message]);
+
+  const toggleListening = () => {
+    if (isListening) {
+      recognitionRef.current?.stop();
+      return;
+    }
+
+    const SpeechRecognitionAPI =
+      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognitionAPI) return;
+
+    const recognition = new SpeechRecognitionAPI();
+    recognition.continuous = false;
+    recognition.interimResults = true;
+    recognition.lang = 'en-US';
+
+    // Snapshot the text typed so far so we can append the spoken words
+    baseTextRef.current = message;
+
+    recognition.onstart = () => setIsListening(true);
+
+    recognition.onresult = (event: any) => {
+      let interim = '';
+      let final = '';
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const t = event.results[i][0].transcript;
+        if (event.results[i].isFinal) final += t;
+        else interim += t;
+      }
+      const base = baseTextRef.current;
+      const separator = base.trim() ? ' ' : '';
+      const combined = base + separator + (final || interim);
+      setMessage(combined);
+      if (final) baseTextRef.current = combined;
+    };
+
+    recognition.onend = () => setIsListening(false);
+    recognition.onerror = () => setIsListening(false);
+
+    recognitionRef.current = recognition;
+    recognition.start();
+  };
 
   const handleSubmit = () => {
     if ((message.trim() || selectedFiles.length > 0) && !disabled) {
@@ -89,7 +147,7 @@ export default function ChatInput({ onSendMessage, disabled = false }: ChatInput
           </div>
         )}
         
-        <div className="relative flex items-end gap-2">
+        <div className="relative flex items-center gap-2">
           <input
             ref={fileInputRef}
             type="file"
@@ -121,6 +179,35 @@ export default function ChatInput({ onSendMessage, disabled = false }: ChatInput
               style={{ maxHeight: '200px' }}
             />
           </div>
+          {speechSupported && (
+            <button
+              onClick={toggleListening}
+              disabled={disabled}
+              className={`flex-shrink-0 rounded-lg sm:rounded-xl border p-2 sm:p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:cursor-not-allowed transition-colors ${
+                isListening
+                  ? 'border-red-400 bg-red-50 text-red-600 animate-pulse hover:bg-red-100'
+                  : 'border-gray-300 text-gray-600 hover:bg-gray-50 disabled:bg-gray-100'
+              }`}
+              aria-label={isListening ? 'Stop listening' : 'Voice input'}
+              title={isListening ? 'Stop listening' : 'Click to speak'}
+            >
+              {isListening ? (
+                // Waveform / stop icon when active
+                <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 10h6v4H9z" />
+                </svg>
+              ) : (
+                // Microphone icon
+                <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                  <line strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} x1="12" y1="19" x2="12" y2="23" />
+                  <line strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} x1="8" y1="23" x2="16" y2="23" />
+                </svg>
+              )}
+            </button>
+          )}
           <button
             onClick={handleSubmit}
             disabled={disabled || (!message.trim() && selectedFiles.length === 0)}
@@ -143,8 +230,11 @@ export default function ChatInput({ onSendMessage, disabled = false }: ChatInput
           </button>
         </div>
         <div className="mt-1.5 sm:mt-2 flex items-center justify-between text-[10px] sm:text-xs text-gray-500">
-          <span className="hidden sm:inline">Press Enter to send, Shift+Enter for new line • Attach images or PDFs</span>
-          <span className="sm:hidden">Tap to attach files</span>
+          <span className="hidden sm:inline">
+            Press Enter to send, Shift+Enter for new line • Attach images or PDFs
+            {speechSupported && ' • Click mic to speak'}
+          </span>
+          <span className="sm:hidden">Tap mic to speak or attach files</span>
           <span className="flex items-center gap-1">
             <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />

@@ -12,10 +12,12 @@ interface Mechanic {
   phone: string;
   shopName: string;
   specialties: string[];
-  experience: number;
-  certifications: string[];
   rating: number;
-  location: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  zipCode?: string;
+  availability: string;
 }
 
 interface TimeSlot {
@@ -35,7 +37,6 @@ export default function BookAppointmentPage() {
   const [selectedSlot, setSelectedSlot] = useState<string>('');
   const [selectedService, setSelectedService] = useState<string>('');
   const [notes, setNotes] = useState<string>('');
-  const [estimatedDuration, setEstimatedDuration] = useState<number>(60);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string>('');
@@ -114,7 +115,6 @@ export default function BookAppointmentPage() {
         timeSlot: selectedSlot,
         serviceType: selectedService,
         notes,
-        estimatedDuration,
       };
       
       console.log('Sending appointment payload:', payload);
@@ -194,10 +194,12 @@ export default function BookAppointmentPage() {
           {/* Mechanic Info */}
           <div className="mb-8 p-6 bg-gray-50 rounded-lg">
             <h2 className="text-2xl font-semibold mb-2 text-black">{mechanic.name}</h2>
+            {mechanic.shopName && <p className="text-gray-500 text-sm mb-2">{mechanic.shopName}</p>}
             <p className="text-gray-600 mb-2">⭐ {mechanic.rating.toFixed(1)} Rating</p>
-            <p className="text-gray-600 mb-2">📍 {mechanic.location}</p>
-            <p className="text-gray-600 mb-2">📞 {mechanic.phone}</p>
-            <p className="text-gray-600 mb-4">💼 {mechanic.experience} years experience</p>
+            {(mechanic.city || mechanic.address) && (
+              <p className="text-gray-600 mb-2">📍 {[mechanic.address, mechanic.city, mechanic.state].filter(Boolean).join(', ')}</p>
+            )}
+            <p className="text-gray-600 mb-4">📞 {mechanic.phone}</p>
             <div className="flex flex-wrap gap-2">
               {mechanic.specialties.map((specialty, idx) => (
                 <span key={idx} className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
@@ -268,7 +270,7 @@ export default function BookAppointmentPage() {
               <select
                 value={selectedService}
                 onChange={(e) => setSelectedService(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white"
                 required
               >
                 <option value="">Select a service</option>
@@ -277,26 +279,6 @@ export default function BookAppointmentPage() {
                     {specialty}
                   </option>
                 ))}
-              </select>
-            </div>
-
-            {/* Estimated Duration */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Estimated Duration
-              </label>
-              <select
-                value={estimatedDuration}
-                onChange={(e) => setEstimatedDuration(Number(e.target.value))}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                required
-              >
-                <option value={30}>30 minutes</option>
-                <option value={60}>1 hour</option>
-                <option value={90}>1.5 hours</option>
-                <option value={120}>2 hours</option>
-                <option value={180}>3 hours</option>
-                <option value={240}>4 hours</option>
               </select>
             </div>
 

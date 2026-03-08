@@ -250,6 +250,9 @@ export default function Home() {
                   role: msg.role,
                   content: msg.content,
                   timestamp: msg.createdAt,
+                  imageUrls: msg.attachments
+                    ?.filter((a: any) => a.mimetype?.startsWith('image/'))
+                    .map((a: any) => `http://localhost:3001/uploads/chat-files/${a.filename}`),
                 })),
               };
             }
