@@ -563,7 +563,7 @@ function PendingRequestsTab({ requests }: { requests: MechanicRequest[] }) {
         <div key={request._id} className="border border-gray-200 rounded-xl p-4 hover:border-blue-200 hover:shadow-sm transition-all">
           <div className="flex items-start justify-between mb-3">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0 ${request.status === 'reopen-requested' ? 'bg-gradient-to-br from-yellow-500 to-amber-600' : 'bg-gradient-to-br from-blue-500 to-blue-700'}`}>
                 {(request.userName ?? '?').charAt(0).toUpperCase()}
               </div>
               <div>
@@ -571,10 +571,17 @@ function PendingRequestsTab({ requests }: { requests: MechanicRequest[] }) {
                 <p className="text-xs text-gray-500">{new Date(request.createdAt).toLocaleString()}</p>
               </div>
             </div>
-            <span className="flex items-center gap-1 px-2.5 py-1 bg-orange-50 text-orange-700 border border-orange-100 rounded-full text-xs font-medium">
-              <span className="w-1.5 h-1.5 rounded-full bg-orange-400" />
-              Pending
-            </span>
+            {request.status === 'reopen-requested' ? (
+              <span className="flex items-center gap-1 px-2.5 py-1 bg-yellow-50 text-yellow-700 border border-yellow-100 rounded-full text-xs font-medium">
+                <span className="w-1.5 h-1.5 rounded-full bg-yellow-400" />
+                Reopen Request
+              </span>
+            ) : (
+              <span className="flex items-center gap-1 px-2.5 py-1 bg-orange-50 text-orange-700 border border-orange-100 rounded-full text-xs font-medium">
+                <span className="w-1.5 h-1.5 rounded-full bg-orange-400" />
+                Pending
+              </span>
+            )}
           </div>
 
           {request.messages.length > 0 && (

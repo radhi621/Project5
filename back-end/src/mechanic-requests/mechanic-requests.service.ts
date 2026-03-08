@@ -51,7 +51,7 @@ export class MechanicRequestsService {
     return this.mechanicRequestModel
       .find({ 
         mechanicEmail: userEmail.toLowerCase(),
-        status: 'pending' 
+        status: { $in: ['pending', 'reopen-requested'] },
       })
       .sort({ createdAt: -1 })
       .exec();
