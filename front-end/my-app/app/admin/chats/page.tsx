@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '../../contexts/AuthContext';
 import AdminSidebar from '../components/AdminSidebar';
 import { authenticatedFetch } from '../../utils/api';
@@ -32,13 +32,14 @@ interface ChatSession {
 
 export default function AdminChatsPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user, isLoading: authLoading } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [chats, setChats] = useState<ChatSession[]>([]);
   const [filteredChats, setFilteredChats] = useState<ChatSession[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedChat, setSelectedChat] = useState<ChatSession | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState(searchParams.get('search') ?? '');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [showModal, setShowModal] = useState(false);
 
@@ -81,10 +82,10 @@ export default function AdminChatsPage() {
       const term = searchTerm.toLowerCase();
       filtered = filtered.filter(
         (chat) =>
-          chat.userName.toLowerCase().includes(term) ||
-          chat.mechanicName.toLowerCase().includes(term) ||
-          chat.userEmail.toLowerCase().includes(term) ||
-          chat.mechanicEmail.toLowerCase().includes(term)
+          (chat.userName ?? '').toLowerCase().includes(term) ||
+          (chat.mechanicName ?? '').toLowerCase().includes(term) ||
+          (chat.userEmail ?? '').toLowerCase().includes(term) ||
+          (chat.mechanicEmail ?? '').toLowerCase().includes(term)
       );
     }
 

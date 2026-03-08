@@ -27,7 +27,7 @@ export class ChatService {
     if (userId) {
       filter.userId = userId;
     }
-    return this.chatModel.find(filter).sort({ updatedAt: -1 }).exec();
+    return this.chatModel.find(filter).populate('userId', 'name email').sort({ updatedAt: -1 }).exec();
   }
 
   async findChatById(id: string): Promise<Chat> {
@@ -92,10 +92,20 @@ export class ChatService {
 
     // Generate AI response with files if provided
     let aiResponse: string;
+
+    // Fetch prior messages for conversation history (exclude the message just saved)
+    const priorMessages = await this.messageModel
+      .find({ chatId })
+      .sort({ createdAt: 1 })
+      .exec();
+    const history = priorMessages
+      .filter(m => m._id.toString() !== userMessage._id.toString())
+      .map(m => ({ role: m.role === 'user' ? 'user' : 'model' as 'user' | 'model', text: m.content }));
+
     if (files && files.length > 0) {
       aiResponse = await this.geminiService.generateResponseWithImages(content, context, files);
     } else {
-      aiResponse = await this.geminiService.generateResponse(content, context);
+      aiResponse = await this.geminiService.generateResponseWithHistory(content, context, history);
     }
 
     // Save AI message

@@ -17,6 +17,8 @@ import { extname } from 'path';
 import { ChatService } from './chat.service';
 import { CreateChatDto, CreateMessageDto } from './dto/chat.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
 
 @Controller('chat')
 @UseGuards(JwtAuthGuard)
@@ -41,6 +43,20 @@ export class ChatController {
   @Get('stats')
   getStats() {
     return this.chatService.getStats();
+  }
+
+  @Get('admin/all')
+  @UseGuards(RolesGuard)
+  @Roles('admin')
+  findAllChatsAdmin() {
+    return this.chatService.findAllChats();
+  }
+
+  @Get('admin/user/:userId')
+  @UseGuards(RolesGuard)
+  @Roles('admin')
+  findChatsForUser(@Param('userId') userId: string) {
+    return this.chatService.findAllChats(userId);
   }
 
   @Get(':id')

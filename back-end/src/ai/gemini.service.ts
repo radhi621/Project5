@@ -86,4 +86,27 @@ Please analyze the images and provide a comprehensive answer:`;
     const response = await result.response;
     return response.text();
   }
+
+  async generateResponseWithHistory(
+    prompt: string,
+    context: string,
+    history: { role: 'user' | 'model'; text: string }[],
+  ): Promise<string> {
+    const systemInstruction = `You are an automotive diagnostic assistant. Use the following knowledge base context when relevant to answer the user's question accurately. If the context doesn't contain relevant information, provide general automotive knowledge.
+
+Context:
+${context}`;
+
+    const chat = this.model.startChat({
+      history: [
+        { role: 'user', parts: [{ text: systemInstruction }] },
+        { role: 'model', parts: [{ text: 'Understood. I am ready to assist with automotive diagnostics.' }] },
+        ...history.map(h => ({ role: h.role, parts: [{ text: h.text }] })),
+      ],
+    });
+
+    const result = await chat.sendMessage(prompt);
+    const response = await result.response;
+    return response.text();
+  }
 }

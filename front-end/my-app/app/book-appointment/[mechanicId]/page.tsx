@@ -37,6 +37,7 @@ export default function BookAppointmentPage() {
   const [selectedSlot, setSelectedSlot] = useState<string>('');
   const [selectedService, setSelectedService] = useState<string>('');
   const [notes, setNotes] = useState<string>('');
+  const [userPhone, setUserPhone] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string>('');
@@ -96,6 +97,10 @@ export default function BookAppointmentPage() {
       setError('Please select a time slot and service');
       return;
     }
+    if (!userPhone.trim()) {
+      setError('Please enter your phone number');
+      return;
+    }
 
     setSubmitting(true);
     setError('');
@@ -115,6 +120,7 @@ export default function BookAppointmentPage() {
         timeSlot: selectedSlot,
         serviceType: selectedService,
         notes,
+        userPhone,
       };
       
       console.log('Sending appointment payload:', payload);
@@ -282,6 +288,21 @@ export default function BookAppointmentPage() {
               </select>
             </div>
 
+            {/* Phone Number */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Phone Number <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="tel"
+                value={userPhone}
+                onChange={(e) => setUserPhone(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                placeholder="e.g. 06 00 00 00 00"
+                required
+              />
+            </div>
+
             {/* Notes */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -304,7 +325,7 @@ export default function BookAppointmentPage() {
 
             <button
               type="submit"
-              disabled={submitting || !selectedSlot || !selectedService}
+              disabled={submitting || !selectedSlot || !selectedService || !userPhone.trim()}
               className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors font-semibold"
             >
               {submitting ? 'Booking...' : 'Book Appointment'}

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import AdminSidebar from '../components/AdminSidebar';
 import { authenticatedFetch } from '../../utils/api';
 
@@ -18,6 +19,7 @@ interface User {
 }
 
 export default function UsersPage() {
+  const router = useRouter();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showUserModal, setShowUserModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -26,11 +28,29 @@ export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({ total: 0, active: 0, newThisMonth: 0, avgChats: 0 });
+  const [userChats, setUserChats] = useState<{ id: string; title: string; createdAt: string }[]>([]);
+  const [loadingChats, setLoadingChats] = useState(false);
 
   React.useEffect(() => {
     loadUsers();
     loadStats();
   }, []);
+
+  const loadUserChats = async (userId: string) => {
+    try {
+      setLoadingChats(true);
+      setUserChats([]);
+      const response = await authenticatedFetch(`http://localhost:3001/api/chat/admin/user/${userId}`);
+      if (response.ok) {
+        const data = await response.json();
+        setUserChats(data.map((c: any) => ({ id: c._id, title: c.title, createdAt: c.createdAt })));
+      }
+    } catch (error) {
+      console.error('Failed to load user chats:', error);
+    } finally {
+      setLoadingChats(false);
+    }
+  };
 
   const loadUsers = async () => {
     try {
@@ -381,6 +401,7 @@ export default function UsersPage() {
                           onClick={() => {
                             setSelectedUser(user);
                             setShowUserModal(true);
+                            loadUserChats(user.id);
                           }}
                           className="text-blue-600 hover:text-blue-900 mr-3"
                         >
@@ -515,24 +536,33 @@ export default function UsersPage() {
 
             {/* Recent Activity */}
             <div className="mb-6">
-              <h4 className="font-semibold text-gray-900 mb-3">Recent Chat History</h4>
+              <h4 className="font-semibold text-gray-900 mb-3">Recent AI Diagnoses</h4>
               <div className="space-y-2">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-blue-100 rounded-lg">
+                {loadingChats ? (
+                  <div className="flex items-center justify-center py-4">
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600" />
+                  </div>
+                ) : userChats.length === 0 ? (
+                  <p className="text-sm text-gray-500 py-2">No chat history found.</p>
+                ) : (
+                  userChats.slice(0, 5).map((chat) => (
+                    <button
+                      key={chat.id}
+                      onClick={() => router.push(`/admin/ai-chats?chatId=${chat.id}`)}
+                      className="w-full flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-blue-50 transition-colors text-left"
+                    >
+                      <div className="p-2 bg-blue-100 rounded-lg flex-shrink-0">
                         <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                         </svg>
                       </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-900">Check engine light issue</p>
-                        <p className="text-xs text-gray-500">Jan {10 - i}, 2026</p>
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-gray-900 truncate">{chat.title}</p>
+                        <p className="text-xs text-gray-500">{new Date(chat.createdAt).toLocaleDateString()}</p>
                       </div>
-                    </div>
-                    <button className="text-blue-600 hover:text-blue-900 text-sm font-medium">View</button>
-                  </div>
-                ))}
+                    </button>
+                  ))
+                )}
               </div>
             </div>
 
@@ -541,8 +571,9 @@ export default function UsersPage() {
               <button className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
                 Send Message
               </button>
-              <button className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-                View All Chats
+              <button className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                onClick={() => selectedUser && router.push(`/admin/ai-chats?userId=${encodeURIComponent(selectedUser.id)}&userName=${encodeURIComponent(selectedUser.name)}`)}>
+                View All AI Chats
               </button>
               <button onClick={() => selectedUser && handleSuspendUser(selectedUser.id)} className="px-4 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 transition-colors">
                 Suspend
