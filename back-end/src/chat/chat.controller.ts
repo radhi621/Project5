@@ -59,6 +59,20 @@ export class ChatController {
     return this.chatService.findAllChats(userId);
   }
 
+  @Get('receipts/me')
+  @UseGuards(RolesGuard)
+  @Roles('mechanic')
+  findMyReceipts(@Request() req: any) {
+    return this.chatService.findReceiptsForMechanic(req.user.email);
+  }
+
+  @Get('receipts/admin/all')
+  @UseGuards(RolesGuard)
+  @Roles('admin')
+  findAllReceiptsForAdmin() {
+    return this.chatService.findAllReceipts();
+  }
+
   @Get(':id')
   findChatById(@Param('id') id: string) {
     return this.chatService.findChatById(id);
@@ -95,8 +109,9 @@ export class ChatController {
   sendMessage(
     @Body() createMessageDto: CreateMessageDto | any,
     @UploadedFiles() files: Express.Multer.File[],
+    @Request() req: any,
   ) {
-    return this.chatService.sendMessage(createMessageDto, files);
+    return this.chatService.sendMessage(createMessageDto, files, req.user);
   }
 
   @Delete(':id')

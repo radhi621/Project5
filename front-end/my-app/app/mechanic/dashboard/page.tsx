@@ -36,16 +36,32 @@ interface MechanicRequest {
   completedAt?: string;
 }
 
+interface ServiceReceipt {
+  _id: string;
+  customerName: string;
+  customerEmail: string;
+  customerPhone?: string;
+  serviceType: string;
+  partsUsed: string[];
+  laborCost: number;
+  partsCost: number;
+  totalCost: number;
+  notes: string;
+  fileUrl?: string;
+  createdAt: string;
+}
+
 export default function MechanicDashboard() {
   const { user, isLoading: authLoading } = useAuth();
   const router = useRouter();
   const [profile, setProfile] = useState<MechanicProfile | null>(null);
   const [pendingRequests, setPendingRequests] = useState<MechanicRequest[]>([]);
   const [requestHistory, setRequestHistory] = useState<MechanicRequest[]>([]);
+  const [receipts, setReceipts] = useState<ServiceReceipt[]>([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState<'pending' | 'history' | 'appointments'>('pending');
+  const [activeTab, setActiveTab] = useState<'pending' | 'history' | 'appointments' | 'receipts'>('pending');
   
   // Form state
   const [formData, setFormData] = useState({
@@ -72,6 +88,7 @@ export default function MechanicDashboard() {
       loadProfile();
       loadPendingRequests();
       loadRequestHistory();
+      loadReceipts();
     }
   }, [user, authLoading, router]);
 
@@ -136,6 +153,18 @@ export default function MechanicDashboard() {
       }
     } catch (error) {
       console.error('Failed to load request history:', error);
+    }
+  };
+
+  const loadReceipts = async () => {
+    try {
+      const response = await authenticatedFetch('http://localhost:3001/api/chat/receipts/me');
+      if (response.ok) {
+        const data = await response.json();
+        setReceipts(data);
+      }
+    } catch (error) {
+      console.error('Failed to load receipts:', error);
     }
   };
 
@@ -377,7 +406,7 @@ export default function MechanicDashboard() {
           <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
             {/* Tab nav */}
             <div className="flex border-b border-gray-200">
-              {(['pending', 'appointments', 'history'] as const).map(tab => (
+              {(['pending', 'appointments', 'history', 'receipts'] as const).map(tab => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
@@ -387,10 +416,21 @@ export default function MechanicDashboard() {
                       : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
                   }`}
                 >
-                  {tab === 'pending' ? 'Pending Requests' : tab === 'appointments' ? 'Appointments' : 'Request History'}
+                  {tab === 'pending'
+                    ? 'Pending Requests'
+                    : tab === 'appointments'
+                    ? 'Appointments'
+                    : tab === 'history'
+                    ? 'Request History'
+                    : 'Receipts'}
                   {tab === 'pending' && pendingRequests.length > 0 && (
                     <span className="ml-1.5 px-1.5 py-0.5 bg-orange-100 text-orange-700 rounded-full text-xs font-semibold">
                       {pendingRequests.length}
+                    </span>
+                  )}
+                  {tab === 'receipts' && receipts.length > 0 && (
+                    <span className="ml-1.5 px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded-full text-xs font-semibold">
+                      {receipts.length}
                     </span>
                   )}
                 </button>
@@ -401,6 +441,7 @@ export default function MechanicDashboard() {
               {activeTab === 'pending' && <PendingRequestsTab requests={pendingRequests} />}
               {activeTab === 'appointments' && <AppointmentsTab mechanicId={profile._id} />}
               {activeTab === 'history' && <RequestHistoryTab history={requestHistory} />}
+              {activeTab === 'receipts' && <ReceiptsTab receipts={receipts} />}
             </div>
           </div>
 
@@ -541,6 +582,58 @@ export default function MechanicDashboard() {
 }
 
 // Tab Components
+function ReceiptsTab({ receipts }: { receipts: ServiceReceipt[] }) {
+  if (receipts.length === 0) {
+    return (
+      <div className="text-center py-10">
+        <div className="inline-flex items-center justify-center w-12 h-12 bg-gray-100 rounded-full mb-3">
+          <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+        </div>
+        <p className="text-sm font-medium text-gray-600">No service receipts yet</p>
+        <p className="text-xs text-gray-400 mt-1">Create one in the home AI chat by saying "let's create a service receipt"</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      {receipts.map((receipt) => (
+        <div key={receipt._id} className="border border-gray-200 rounded-xl p-4">
+          <div className="flex items-start justify-between gap-4">
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-gray-900 truncate">{receipt.customerName}</p>
+              <p className="text-xs text-gray-500 truncate">{receipt.customerEmail}</p>
+              <p className="text-xs text-gray-400 mt-1">{new Date(receipt.createdAt).toLocaleString()}</p>
+            </div>
+            <span className="text-sm font-semibold text-green-700">${receipt.totalCost.toFixed(2)}</span>
+          </div>
+          <div className="mt-3 text-xs text-gray-600 bg-gray-50 rounded-lg px-3 py-2">
+            <p><span className="font-medium">Service:</span> {receipt.serviceType}</p>
+            <p className="mt-1"><span className="font-medium">Parts:</span> {receipt.partsUsed.length > 0 ? receipt.partsUsed.join(', ') : 'None'}</p>
+          </div>
+          {receipt.fileUrl && (
+            <div className="mt-3">
+              <a
+                href={`http://localhost:3001${receipt.fileUrl}`}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-blue-200 text-blue-700 hover:bg-blue-50"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3M7 20h10a2 2 0 002-2V6a2 2 0 00-2-2h-3.586a1 1 0 01-.707-.293l-1.414-1.414A1 1 0 0010.586 2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                </svg>
+                Download Receipt File
+              </a>
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function PendingRequestsTab({ requests }: { requests: MechanicRequest[] }) {
   const router = useRouter();
   if (requests.length === 0) {

@@ -36,6 +36,10 @@ export class MechanicsService {
     return this.mechanicModel.find(filter).sort({ rating: -1 }).exec();
   }
 
+  async findByEmail(email: string): Promise<MechanicDocument | null> {
+    return this.mechanicModel.findOne({ email: email.toLowerCase(), isActive: true }).exec();
+  }
+
   async findOne(id: string): Promise<Mechanic> {
     const mechanic = await this.mechanicModel.findById(id).exec();
     if (!mechanic) {
